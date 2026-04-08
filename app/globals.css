@@ -1,26 +1,234 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Dark moody base — warm charcoal (no purple), gold trim */
+  --background: #0f0e0c;
+  --foreground: #e9e4da;
+  --ink: #e9e4da;
+  --ink-muted: #938e84;
+  --surface: #1a1815;
+  --surface-muted: #242220;
+  --muted: #2d2a26;
+  --button-primary-bg: #080807;
+  --button-primary-fg: #f4f1ea;
+  --gold: #d4af37;
+  --gold-light: #e8cf6a;
+  --gold-dark: #a68419;
+  --gold-faint: rgba(212, 175, 55, 0.12);
+  --border-subtle: rgba(233, 228, 218, 0.09);
+  /* Legacy names mapped for existing utilities */
+  --parchment: var(--background);
+  --parchment-elevated: var(--surface);
+  --parchment-deep: var(--surface-muted);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-muted: var(--muted);
+  --color-parchment: var(--parchment);
+  --color-parchment-elevated: var(--parchment-elevated);
+  --color-parchment-deep: var(--parchment-deep);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-gold-dark: var(--gold-dark);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+}
+
+/* App backdrop — deep warm base + soft gold atmosphere */
+.bg-parchment-texture {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(ellipse 100% 75% at 50% -28%, rgba(212, 175, 55, 0.14), transparent 52%),
+    radial-gradient(ellipse 55% 38% at 100% 0%, rgba(166, 132, 25, 0.1), transparent 42%),
+    radial-gradient(ellipse 45% 32% at 0% 100%, rgba(212, 175, 55, 0.05), transparent 48%);
+}
+
+/* Gold accent lines */
+.gold-rule {
+  height: 2px;
+  width: 5rem;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--gold-dark) 15%,
+    var(--gold-light) 50%,
+    var(--gold-dark) 85%,
+    transparent
+  );
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.28);
+}
+
+.gold-rule-wide {
+  height: 2px;
+  width: 100%;
+  max-width: 14rem;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--gold) 12%,
+    var(--gold-light) 50%,
+    var(--gold) 88%,
+    transparent
+  );
+  box-shadow: 0 0 18px rgba(212, 175, 55, 0.22);
+}
+
+/* Card: pronounced gold frame */
+.card-renaissance {
+  background: var(--surface);
+  border-radius: 1rem;
+  border: 1px solid rgba(212, 175, 55, 0.32);
+  box-shadow:
+    0 0 0 3px rgba(212, 175, 55, 0.08),
+    0 1px 0 0 rgba(232, 207, 106, 0.12) inset,
+    0 28px 56px -28px rgba(0, 0, 0, 0.55);
+}
+
+.header-gold-edge {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.28);
+  box-shadow:
+    0 8px 32px -16px rgba(0, 0, 0, 0.45),
+    0 3px 0 0 rgba(212, 175, 55, 0.35) inset;
+}
+
+/* --- Motion --- */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes gold-shimmer {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes subtle-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(212, 175, 55, 0.35),
+      0 0 22px -8px rgba(212, 175, 55, 0.18);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(232, 207, 106, 0.45),
+      0 0 30px -6px rgba(212, 175, 55, 0.28);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out both;
+}
+
+.animate-gold-shimmer {
+  animation: gold-shimmer 2.8s ease-in-out infinite;
+}
+
+.animate-card-glow {
+  animation: subtle-glow 4s ease-in-out infinite;
+}
+
+.stagger-1 {
+  animation-delay: 80ms;
+}
+.stagger-2 {
+  animation-delay: 160ms;
+}
+.stagger-3 {
+  animation-delay: 240ms;
+}
+.stagger-4 {
+  animation-delay: 320ms;
+}
+.stagger-5 {
+  animation-delay: 400ms;
+}
+.stagger-6 {
+  animation-delay: 480ms;
+}
+
+/* Table row entrance (delay set inline per row) */
+.animate-row-in {
+  animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Form input polish */
+.input-modern {
+  @apply w-full rounded-xl border border-ink/10 bg-surface px-4 py-3 text-sm text-ink transition-all duration-200;
+  @apply placeholder:text-ink-muted/45 hover:border-gold/25;
+  @apply focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25;
+}
+
+/* Primary CTA with gold flare on hover */
+.btn-primary-gold {
+  @apply relative overflow-hidden rounded-xl px-8 py-3 text-sm font-semibold transition-transform duration-200;
+  background-color: var(--button-primary-bg);
+  color: var(--button-primary-fg);
+}
+.btn-primary-gold::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(232, 207, 106, 0.22) 50%,
+    transparent 60%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+.btn-primary-gold:hover::after {
+  transform: translateX(100%);
+}
+.btn-primary-gold:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 28px -8px rgba(212, 175, 55, 0.4);
 }

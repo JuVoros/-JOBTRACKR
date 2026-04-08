@@ -25,7 +25,17 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user }, error } = await supabase.auth.getUser()
+
+  // If we have a stale/invalid refresh token, clear it and treat as logged out
+  if (error?.status === 400 && error.code === 'refresh_token_not_found') {
+    const response = NextResponse.redirect(new URL('/login', request.url))
+    // Delete all Supabase auth cookies so the client starts fresh
+    request.cookies.getAll()
+      .filter(c => c.name.startsWith('sb-'))
+      .forEach(c => response.cookies.delete(c.name))
+    return response
+  }
 
   // If user is not logged in and trying to access dashboard, redirect to login
   if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
