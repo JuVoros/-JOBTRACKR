@@ -46,3 +46,20 @@ export async function deleteJob(id: string) {
 
   revalidatePath('/dashboard')
 }
+
+export async function updateJob(
+  id: string,
+  data: { company?: string; role?: string; status?: string; notes?: string | null }
+) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) throw new Error('Unauthorized')
+
+  await prisma.jobApplication.updateMany({
+    where: { id, userId: user.id },
+    data,
+  })
+
+  revalidatePath('/dashboard')
+}

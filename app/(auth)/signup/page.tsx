@@ -13,7 +13,8 @@ export default function SignupPage() {
   const router = useRouter()
   const supabase = createClient()
 
-  async function handleSignup() {
+  async function handleSignup(e: React.FormEvent) {
+    e.preventDefault()
     setLoading(true)
     setError(null)
 
@@ -29,39 +30,58 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-md p-8 space-y-4">
-        <h1 className="text-2xl font-bold">Create your account</h1>
+    <div className="flex min-h-screen items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        <div className="mb-8 text-center">
+          <h1 className="text-xl font-bold text-[#e4e4e7]">JobTrackr</h1>
+          <p className="mt-1 text-sm text-[#52525b]">Create your account</p>
+        </div>
 
-        {error && (
-          <p className="text-red-500 text-sm">{error}</p>
-        )}
+        <form onSubmit={handleSignup} className="space-y-4">
+          {error && (
+            <div className="rounded-xl border border-[#A32D2D44] bg-[#A32D2D22] px-4 py-3 text-sm text-[#F09595]">
+              {error}
+            </div>
+          )}
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-        />
-        <button
-          onClick={handleSignup}
-          disabled={loading}
-          className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 disabled:opacity-50"
-        >
-          {loading ? 'Creating account...' : 'Sign up'}
-        </button>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-[#71717a]">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="h-11 w-full rounded-xl border border-white/5 bg-[#1a1a1e] px-3 text-sm text-[#e4e4e7] outline-none placeholder:text-[#3f3f46] focus:border-[#7F77DD]/40 focus:ring-1 focus:ring-[#7F77DD]/40"
+              placeholder="you@example.com"
+            />
+          </div>
 
-        <p className="text-sm text-center">
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-[#71717a]">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="h-11 w-full rounded-xl border border-white/5 bg-[#1a1a1e] px-3 text-sm text-[#e4e4e7] outline-none placeholder:text-[#3f3f46] focus:border-[#7F77DD]/40 focus:ring-1 focus:ring-[#7F77DD]/40"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="h-11 w-full rounded-xl bg-[#7F77DD] text-sm font-semibold text-white transition-colors hover:bg-[#938BF0] disabled:opacity-50"
+          >
+            {loading ? 'Creating account...' : 'Sign up'}
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-sm text-[#52525b]">
           Already have an account?{' '}
-          <Link href="/login" className="underline">Log in</Link>
+          <Link href="/login" className="text-[#7F77DD] hover:text-[#938BF0]">
+            Sign in
+          </Link>
         </p>
       </div>
     </div>

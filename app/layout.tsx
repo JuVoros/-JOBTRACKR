@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,16 +12,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
 export const metadata: Metadata = {
-  title: "JobTrackr — Job applications, elegantly tracked",
-  description:
-    "Track applications, interviews, and offers in one refined workspace.",
+  title: "JobTrackr",
+  description: "Track your job applications",
 };
 
 export default function RootLayout({
@@ -30,11 +23,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${cormorant.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col text-ink">{children}</body>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} dark`}>
+      <body className="min-h-screen bg-[#0d0d0f] text-[#e4e4e7] antialiased">
+        {children}
+      </body>
     </html>
   );
 }
