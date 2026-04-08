@@ -27,48 +27,108 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Animated moody gradient background */
+/* Subtle shifting purple wash — slow drift, matches accent */
 .bg-moody-gradient {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background:
-    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(90, 60, 160, 0.15) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 80% at 80% 90%, rgba(60, 40, 140, 0.12) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 50% at 60% 30%, rgba(127, 119, 221, 0.08) 0%, transparent 50%),
-    #0d0d0f;
-  animation: gradient-drift 20s ease-in-out infinite alternate;
+  overflow: hidden;
+  background-color: #0d0d0f;
+  background-image: radial-gradient(
+    ellipse 120% 70% at 50% -20%,
+    rgba(127, 119, 221, 0.07) 0%,
+    transparent 55%
+  );
 }
 
-@keyframes gradient-drift {
-  0% {
-    background:
-      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(90, 60, 160, 0.15) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 80% at 80% 90%, rgba(60, 40, 140, 0.12) 0%, transparent 50%),
-      radial-gradient(ellipse 50% 50% at 60% 30%, rgba(127, 119, 221, 0.08) 0%, transparent 50%),
-      #0d0d0f;
-  }
-  33% {
-    background:
-      radial-gradient(ellipse 70% 70% at 40% 20%, rgba(100, 60, 180, 0.14) 0%, transparent 55%),
-      radial-gradient(ellipse 80% 60% at 60% 80%, rgba(70, 50, 150, 0.10) 0%, transparent 50%),
-      radial-gradient(ellipse 40% 60% at 30% 60%, rgba(127, 119, 221, 0.07) 0%, transparent 50%),
-      #0d0d0f;
-  }
-  66% {
-    background:
-      radial-gradient(ellipse 60% 80% at 70% 15%, rgba(80, 50, 150, 0.13) 0%, transparent 60%),
-      radial-gradient(ellipse 70% 50% at 30% 75%, rgba(55, 35, 130, 0.11) 0%, transparent 55%),
-      radial-gradient(ellipse 50% 50% at 80% 50%, rgba(127, 119, 221, 0.09) 0%, transparent 45%),
-      #0d0d0f;
-  }
+.bg-moody-gradient::before,
+.bg-moody-gradient::after {
+  content: "";
+  position: absolute;
+  width: min(100vmin, 780px);
+  height: min(100vmin, 780px);
+  border-radius: 50%;
+  filter: blur(100px);
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.bg-moody-gradient::before {
+  left: -18%;
+  top: -12%;
+  background: radial-gradient(
+    circle at 40% 40%,
+    rgba(127, 119, 221, 0.38) 0%,
+    rgba(90, 72, 200, 0.12) 45%,
+    transparent 72%
+  );
+  opacity: 0.45;
+  animation-name: moody-drift-a;
+  animation-duration: 36s;
+}
+
+.bg-moody-gradient::after {
+  right: -22%;
+  bottom: -8%;
+  background: radial-gradient(
+    circle at 55% 55%,
+    rgba(100, 80, 210, 0.32) 0%,
+    rgba(60, 45, 140, 0.1) 48%,
+    transparent 70%
+  );
+  opacity: 0.4;
+  animation-name: moody-drift-b;
+  animation-duration: 44s;
+  animation-delay: -12s;
+}
+
+@keyframes moody-drift-a {
+  0%,
   100% {
-    background:
-      radial-gradient(ellipse 80% 60% at 50% 5%, rgba(95, 65, 170, 0.16) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 70% at 20% 85%, rgba(65, 45, 145, 0.10) 0%, transparent 50%),
-      radial-gradient(ellipse 55% 45% at 75% 40%, rgba(127, 119, 221, 0.08) 0%, transparent 50%),
-      #0d0d0f;
+    transform: translate(0, 0) scale(1);
+    opacity: 0.32;
+  }
+  22% {
+    transform: translate(14%, 10%) scale(1.06);
+    opacity: 0.48;
+  }
+  48% {
+    transform: translate(6%, 28%) scale(0.94);
+    opacity: 0.36;
+  }
+  72% {
+    transform: translate(-10%, 14%) scale(1.03);
+    opacity: 0.42;
+  }
+}
+
+@keyframes moody-drift-b {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1.02);
+    opacity: 0.3;
+  }
+  28% {
+    transform: translate(-12%, -16%) scale(0.92);
+    opacity: 0.46;
+  }
+  55% {
+    transform: translate(-22%, 8%) scale(1.08);
+    opacity: 0.34;
+  }
+  78% {
+    transform: translate(6%, -6%) scale(0.98);
+    opacity: 0.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-moody-gradient::before,
+  .bg-moody-gradient::after {
+    animation: none;
+    opacity: 0.28;
+    transform: none;
   }
 }
 
