@@ -79,7 +79,7 @@ export default function DashboardClient({ jobs }: DashboardClientProps) {
       <button
         type="button"
         onClick={() => setModalOpen(true)}
-        className="fixed bottom-20 right-5 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[#7F77DD] text-white shadow-lg shadow-[#7F77DD]/20 transition-transform active:scale-95 sm:hidden"
+        className="fixed bottom-16 right-5 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[#7F77DD] text-white shadow-lg shadow-[#7F77DD]/20 transition-transform active:scale-95 sm:hidden"
         aria-label="Add application"
       >
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

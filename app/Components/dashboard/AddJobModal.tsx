@@ -84,7 +84,7 @@ export default function AddJobModal({ open, onClose }: AddJobModalProps) {
                     name="company"
                     required
                     placeholder="e.g. Stripe"
-                    className="h-11 w-full rounded-xl border border-white/5 bg-[#0d0d0f] px-3 text-sm text-[#e4e4e7] outline-none placeholder:text-[#3f3f46] focus:border-[#7F77DD]/40 focus:ring-1 focus:ring-[#7F77DD]/40"
+                    className="h-11 w-full rounded-xl border border-white/5 bg-[#0d0d0f] px-3 text-base sm:text-sm text-[#e4e4e7] outline-none placeholder:text-[#3f3f46] focus:border-[#7F77DD]/40 focus:ring-1 focus:ring-[#7F77DD]/40"
                   />
                 </div>
 
@@ -95,7 +95,7 @@ export default function AddJobModal({ open, onClose }: AddJobModalProps) {
                     name="role"
                     required
                     placeholder="e.g. Frontend Engineer"
-                    className="h-11 w-full rounded-xl border border-white/5 bg-[#0d0d0f] px-3 text-sm text-[#e4e4e7] outline-none placeholder:text-[#3f3f46] focus:border-[#7F77DD]/40 focus:ring-1 focus:ring-[#7F77DD]/40"
+                    className="h-11 w-full rounded-xl border border-white/5 bg-[#0d0d0f] px-3 text-base sm:text-sm text-[#e4e4e7] outline-none placeholder:text-[#3f3f46] focus:border-[#7F77DD]/40 focus:ring-1 focus:ring-[#7F77DD]/40"
                   />
                 </div>
 
@@ -130,7 +130,7 @@ export default function AddJobModal({ open, onClose }: AddJobModalProps) {
                     type="date"
                     name="appliedDate"
                     defaultValue={new Date().toISOString().split('T')[0]}
-                    className="h-11 w-full rounded-xl border border-white/5 bg-[#0d0d0f] px-3 text-sm text-[#e4e4e7] outline-none focus:border-[#7F77DD]/40 focus:ring-1 focus:ring-[#7F77DD]/40"
+                    className="h-11 w-full rounded-xl border border-white/5 bg-[#0d0d0f] px-3 text-base sm:text-sm text-[#e4e4e7] outline-none focus:border-[#7F77DD]/40 focus:ring-1 focus:ring-[#7F77DD]/40"
                   />
                 </div>
 

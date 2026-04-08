@@ -37,8 +37,8 @@ export default function ApplicationCard({ job, index }: ApplicationCardProps) {
   const cycleStatus = () => {
     const idx = STATUSES.indexOf(data.status)
     const next = STATUSES[(idx + 1) % STATUSES.length]
-    save({ status: next })
     setData((prev) => ({ ...prev, status: next }))
+    save({ status: next })
   }
 
   const handleBlur = (field: 'company' | 'role' | 'notes', value: string) => {
@@ -87,18 +87,19 @@ export default function ApplicationCard({ job, index }: ApplicationCardProps) {
               autoFocus
               onBlur={(e) => handleBlur('company', e.target.value)}
               onKeyDown={(e) => handleKeyDown(e, 'company')}
-              className="w-full rounded-lg bg-white/5 px-2 py-1 text-base font-semibold text-[#e4e4e7] outline-none ring-1 ring-[#7F77DD]/40"
+              className="h-10 w-full rounded-lg bg-white/5 px-3 text-base font-semibold text-[#e4e4e7] outline-none ring-1 ring-[#7F77DD]/40"
             />
           ) : (
             <button
               type="button"
               onClick={() => setEditingField('company')}
-              className="w-full truncate text-left text-base font-semibold text-[#e4e4e7] hover:text-white"
+              className="min-h-10 w-full truncate text-left text-base font-semibold text-[#e4e4e7] hover:text-white"
             >
               {data.company}
             </button>
           )}
         </div>
+
         <StatusBadge status={data.status} onClick={cycleStatus} />
       </div>
 
@@ -112,13 +113,13 @@ export default function ApplicationCard({ job, index }: ApplicationCardProps) {
             autoFocus
             onBlur={(e) => handleBlur('role', e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, 'role')}
-            className="w-full rounded-lg bg-white/5 px-2 py-1 text-sm text-[#a1a1aa] outline-none ring-1 ring-[#7F77DD]/40"
+            className="h-9 w-full rounded-lg bg-white/5 px-3 text-sm text-[#a1a1aa] outline-none ring-1 ring-[#7F77DD]/40"
           />
         ) : (
           <button
             type="button"
             onClick={() => setEditingField('role')}
-            className="truncate text-left text-sm text-[#a1a1aa] hover:text-[#d4d4d8]"
+            className="min-h-9 truncate text-left text-sm text-[#a1a1aa] hover:text-[#d4d4d8]"
           >
             {data.role}
           </button>
@@ -126,7 +127,7 @@ export default function ApplicationCard({ job, index }: ApplicationCardProps) {
       </div>
 
       {/* Notes */}
-      <div className="mt-3">
+      <div className="mt-2">
         {editingField === 'notes' ? (
           <textarea
             ref={notesRef}
@@ -135,15 +136,15 @@ export default function ApplicationCard({ job, index }: ApplicationCardProps) {
             rows={2}
             onBlur={(e) => handleBlur('notes', e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, 'notes')}
-            className="w-full resize-none rounded-lg bg-white/5 px-2 py-1 text-sm text-[#a1a1aa] outline-none ring-1 ring-[#7F77DD]/40"
+            className="w-full resize-none rounded-lg bg-white/5 px-3 py-2 text-sm text-[#a1a1aa] outline-none ring-1 ring-[#7F77DD]/40"
           />
         ) : (
           <button
             type="button"
             onClick={() => setEditingField('notes')}
-            className="line-clamp-2 text-left text-sm text-[#52525b] hover:text-[#71717a]"
+            className="min-h-9 w-full text-left text-sm leading-relaxed text-[#52525b] hover:text-[#71717a]"
           >
-            {data.notes || 'Add notes...'}
+            <span className="line-clamp-2">{data.notes || 'Add notes...'}</span>
           </button>
         )}
       </div>
@@ -160,7 +161,8 @@ export default function ApplicationCard({ job, index }: ApplicationCardProps) {
         <button
           type="button"
           onClick={handleDelete}
-          className="text-xs text-[#52525b] opacity-0 transition-opacity hover:text-[#F09595] group-hover:opacity-100"
+          className="flex h-8 items-center rounded-lg px-2 text-xs text-[#52525b] opacity-0 transition-all hover:bg-[#A32D2D22] hover:text-[#F09595] group-hover:opacity-100 sm:opacity-0"
+          style={{ opacity: undefined }}
         >
           Delete
         </button>

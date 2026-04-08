@@ -47,3 +47,4 @@ src/generated/
 .agents/
 .claude/
 skills-lock.json
+.vercel

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -17,6 +17,12 @@ export const metadata: Metadata = {
   description: "Track your job applications",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -25,7 +31,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} dark`}>
       <body className="min-h-screen bg-[#0d0d0f] text-[#e4e4e7] antialiased">
-        {children}
+        <div className="bg-moody-gradient" aria-hidden="true" />
+        <div className="relative z-10">{children}</div>
       </body>
     </html>
   );

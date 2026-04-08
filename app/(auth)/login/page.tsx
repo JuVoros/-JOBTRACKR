@@ -51,7 +51,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="h-11 w-full rounded-xl border border-white/5 bg-[#1a1a1e] px-3 text-sm text-[#e4e4e7] outline-none placeholder:text-[#3f3f46] focus:border-[#7F77DD]/40 focus:ring-1 focus:ring-[#7F77DD]/40"
+              className="h-11 w-full rounded-xl border border-white/5 bg-[#1a1a1e] px-3 text-base sm:text-sm text-[#e4e4e7] outline-none placeholder:text-[#3f3f46] focus:border-[#7F77DD]/40 focus:ring-1 focus:ring-[#7F77DD]/40"
               placeholder="you@example.com"
             />
           </div>
@@ -63,7 +63,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="h-11 w-full rounded-xl border border-white/5 bg-[#1a1a1e] px-3 text-sm text-[#e4e4e7] outline-none placeholder:text-[#3f3f46] focus:border-[#7F77DD]/40 focus:ring-1 focus:ring-[#7F77DD]/40"
+              className="h-11 w-full rounded-xl border border-white/5 bg-[#1a1a1e] px-3 text-base sm:text-sm text-[#e4e4e7] outline-none placeholder:text-[#3f3f46] focus:border-[#7F77DD]/40 focus:ring-1 focus:ring-[#7F77DD]/40"
               placeholder="••••••••"
             />
           </div>
