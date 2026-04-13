@@ -8,13 +8,42 @@ datasource db {
 }
 
 model JobApplication {
-  id          String   @id @default(cuid())
-  userId      String
-  company     String
-  role        String
-  status      String   @default("applied")
-  notes       String?
-  appliedDate DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String              @id @default(cuid())
+  userId        String
+  company       String
+  role          String
+  status        String              @default("applied")
+  notes         String?
+  appliedDate   DateTime            @default(now())
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  generatedDocs GeneratedDocument[]
+}
+
+model UserProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  fullName       String?
+  email          String?
+  phone          String?
+  location       String?
+  websiteUrl     String?
+  portfolioUrl   String?
+  githubUsername  String?
+  linkedinText   String?
+  rawPortfolio   String?
+  githubData     Json?
+  skills         String[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model GeneratedDocument {
+  id        String         @id @default(cuid())
+  userId    String
+  jobId     String
+  type      String
+  content   String         @db.Text
+  createdAt DateTime       @default(now())
+  job       JobApplication @relation(fields: [jobId], references: [id], onDelete: Cascade)
 }

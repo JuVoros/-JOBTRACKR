@@ -149,7 +149,7 @@ export default function ApplicationCard({ job, index }: ApplicationCardProps) {
         )}
       </div>
 
-      {/* Footer: date + delete */}
+      {/* Footer: date + actions */}
       <div className="mt-3 flex items-center justify-between">
         <span className="text-xs text-[#52525b]">
           {new Date(data.appliedDate).toLocaleDateString('en-US', {
@@ -158,14 +158,23 @@ export default function ApplicationCard({ job, index }: ApplicationCardProps) {
             year: 'numeric',
           })}
         </span>
-        <button
-          type="button"
-          onClick={handleDelete}
-          className="flex h-8 items-center rounded-lg px-2 text-xs text-[#52525b] opacity-0 transition-all hover:bg-[#A32D2D22] hover:text-[#F09595] group-hover:opacity-100 sm:opacity-0"
-          style={{ opacity: undefined }}
-        >
-          Delete
-        </button>
+        <div className="flex items-center gap-1">
+          <a
+            href={`/generate/${data.id}`}
+            className="flex h-8 items-center gap-1 rounded-lg px-2 text-xs text-[#7F77DD] opacity-0 transition-all hover:bg-[#534AB722] group-hover:opacity-100 sm:opacity-0"
+            style={{ opacity: undefined }}
+          >
+            Generate
+          </a>
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="flex h-8 items-center rounded-lg px-2 text-xs text-[#52525b] opacity-0 transition-all hover:bg-[#A32D2D22] hover:text-[#F09595] group-hover:opacity-100 sm:opacity-0"
+            style={{ opacity: undefined }}
+          >
+            Delete
+          </button>
+        </div>
       </div>
     </motion.div>
   )

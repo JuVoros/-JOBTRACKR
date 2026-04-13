@@ -14,13 +14,20 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "JobTrackr",
-  description: "Track your job applications",
+  description: "Track your job applications and generate AI-powered resumes",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "JobTrackr",
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  themeColor: "#7F77DD",
 };
 
 export default function RootLayout({
@@ -30,6 +37,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} dark`}>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="JobTrackr" />
+      </head>
       <body className="min-h-screen bg-[#0d0d0f] text-[#e4e4e7] antialiased">
         <div className="bg-moody-gradient" aria-hidden="true" />
         <div className="relative z-10">{children}</div>

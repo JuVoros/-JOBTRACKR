@@ -10,10 +10,16 @@ export default async function DashboardPage() {
 
   if (!user) redirect('/login')
 
-  const raw = await prisma.jobApplication.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: 'desc' },
-  })
+  const [raw, profile] = await Promise.all([
+    prisma.jobApplication.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.userProfile.findUnique({
+      where: { userId: user.id },
+      select: { id: true },
+    }),
+  ])
 
   const jobs: Application[] = raw.map((j) => ({
     id: j.id,
@@ -30,6 +36,19 @@ export default async function DashboardPage() {
         <h1 className="text-xl font-semibold text-[#e4e4e7]">Dashboard</h1>
         <p className="text-sm text-[#52525b]">Track your applications</p>
       </div>
+
+      {!profile && jobs.length > 0 && (
+        <a
+          href="/profile"
+          className="mb-6 flex items-center justify-between rounded-2xl border border-[#534AB744] bg-[#534AB722] px-4 py-3 transition-colors hover:bg-[#534AB733]"
+        >
+          <span className="text-sm text-[#AFA9EC]">
+            Complete your profile to unlock AI resume generation
+          </span>
+          <span className="text-sm text-[#7F77DD]">&rarr;</span>
+        </a>
+      )}
+
       <DashboardClient jobs={jobs} />
     </div>
   )
