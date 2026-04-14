@@ -25,28 +25,34 @@ export async function proxy(request: NextRequest) {
     }
   )
 
+  // getUser() validates the session AND refreshes the access token via cookies
+  // when it's nearing expiration — this is what makes sessions persist across
+  // browser restarts. The refreshed cookies are propagated on supabaseResponse.
   const { data: { user }, error } = await supabase.auth.getUser()
+
+  const pathname = request.nextUrl.pathname
+  const isProtected =
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/generate') ||
+    pathname.startsWith('/profile')
 
   // If we have a stale/invalid refresh token, clear it and treat as logged out
   if (error?.status === 400 && error.code === 'refresh_token_not_found') {
+    if (!isProtected) return supabaseResponse
     const response = NextResponse.redirect(new URL('/login', request.url))
-    // Delete all Supabase auth cookies so the client starts fresh
     request.cookies.getAll()
       .filter(c => c.name.startsWith('sb-'))
       .forEach(c => response.cookies.delete(c.name))
     return response
   }
 
-  // If user is not logged in and trying to access dashboard, redirect to login
-  if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
+  // Unauthenticated users cannot reach any protected area
+  if (!user && isProtected) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // If user is logged in and trying to access login/signup, redirect to dashboard
-  if (user && (
-    request.nextUrl.pathname === '/login' ||
-    request.nextUrl.pathname === '/signup'
-  )) {
+  // Signed-in users shouldn't see auth pages
+  if (user && (pathname === '/login' || pathname === '/signup')) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 

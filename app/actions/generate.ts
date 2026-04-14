@@ -166,44 +166,37 @@ function buildResumePrompt(
     linkedinText: string | null
   }
 ): string {
-  return `You are an expert resume writer and ATS optimization specialist.
+  return `You are a senior technical recruiter and resume writer with 15 years of experience placing software engineers at top tech companies.
 
-Your task: Write a tailored, ATS-optimized resume for this specific job.
+Analyze this job description carefully and write a highly tailored, ATS-optimized resume for this candidate.
 
-JOB DETAILS:
+JOB TARGET:
 Company: ${company}
 Role: ${role}
 Job Description: ${jobDescription.slice(0, 6000)}
 
-CANDIDATE PROFILE:
+CANDIDATE DATA:
 Skills: ${(profile.skills || []).join(', ') || 'Not specified'}
-GitHub Projects: ${JSON.stringify(profile.githubData || [], null, 2)}
-Portfolio Summary: ${profile.rawPortfolio?.slice(0, 3000) || 'Not provided'}
+Projects: ${JSON.stringify(profile.githubData || [], null, 2)}
+Portfolio: ${profile.rawPortfolio?.slice(0, 3000) || 'Not provided'}
 Background: ${profile.linkedinText || 'Not provided'}
 
-Instructions:
-1. Analyze the job description for required skills, keywords, and priorities
-2. Select and highlight the candidate's most relevant skills and projects
-3. Weave in exact keywords from the job description naturally
-4. Keep it to one page worth of content
+Rules:
+- Mirror the exact language and keywords from the job description
+- Lead with the candidate's strongest relevant qualifications
+- Quantify achievements wherever possible (even estimated impact)
+- Projects section should read like work experience, not a hobby list
+- Summary must be written specifically for THIS role at THIS company
+- Cut anything not relevant to this specific job
+- Every bullet point must start with a strong action verb
+- Output clean markdown only, no explanations or commentary
 
-Return the resume in this EXACT structure with these EXACT section headers:
-
+Format exactly:
+## CONTACT
 ## SUMMARY
-[2-3 sentence professional summary tailored to this specific role, mentioning the company]
-
 ## SKILLS
-[comma-separated list of relevant skills, most relevant to this job first, 10-16 skills]
-
 ## PROJECTS
-### [Project Name] | [Tech Stack]
-- [specific achievement or feature with impact]
-- [specific achievement or feature with impact]
-
-## EDUCATION
-[Degree, Institution, Year (if known, otherwise omit year)]
-
-Output clean markdown only using the ## and ### headers above. No other commentary.`
+## EDUCATION`
 }
 
 export async function generateResume(jobId: string, jobDescription: string) {

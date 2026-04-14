@@ -5,16 +5,12 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { scrapeJobPost, extractJobDetails, createJobAndGenerate } from '../../actions/generate'
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-
 type Step = 'input' | 'confirm' | 'generating' | 'done'
 
 interface ExtractedDetails {
   company: string
   role: string
 }
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function looksLikeUrl(value: string): boolean {
   return /^https?:\/\//i.test(value.trim()) || /^www\./i.test(value.trim())
@@ -31,73 +27,22 @@ function extractTopSkills(markdown: string, max = 5): string[] {
     .slice(0, max)
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
-
-function StepIndicator({ current }: { current: Step }) {
-  const steps: { key: Step; label: string }[] = [
-    { key: 'input', label: 'Job' },
-    { key: 'confirm', label: 'Confirm' },
-    { key: 'generating', label: 'Generate' },
-  ]
-
-  const stepIndex = (s: Step) => steps.findIndex((x) => x.key === s)
-  const currentIdx = stepIndex(current === 'done' ? 'generating' : current)
-
+function SparkleIcon({ className = 'w-5 h-5' }: { className?: string }) {
   return (
-    <div className="flex items-center gap-2 mb-8">
-      {steps.map((step, i) => {
-        const done = i < currentIdx || current === 'done'
-        const active = i === currentIdx && current !== 'done'
-        return (
-          <div key={step.key} className="flex items-center gap-2">
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
-                done
-                  ? 'bg-[#7F77DD] text-white'
-                  : active
-                  ? 'border-2 border-[#7F77DD] text-[#7F77DD]'
-                  : 'border border-white/10 text-white/30'
-              }`}
-            >
-              {done ? '✓' : i + 1}
-            </div>
-            <span
-              className={`text-xs ${
-                active ? 'text-white' : done ? 'text-[#7F77DD]' : 'text-white/30'
-              }`}
-            >
-              {step.label}
-            </span>
-            {i < steps.length - 1 && (
-              <div
-                className={`w-6 h-px mx-1 ${done ? 'bg-[#7F77DD]' : 'bg-white/10'}`}
-              />
-            )}
-          </div>
-        )
-      })}
-    </div>
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+    </svg>
   )
 }
 
 function SpinnerIcon() {
   return (
-    <svg
-      className="animate-spin w-5 h-5"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
+    <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-      />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
     </svg>
   )
 }
-
-// ── Main Component ────────────────────────────────────────────────────────────
 
 interface NewGenerateClientProps {
   prefillUrl: string
@@ -111,23 +56,18 @@ export default function NewGenerateClient({ prefillUrl, hasProfile }: NewGenerat
   const [step, setStep] = useState<Step>('input')
   const [input, setInput] = useState(prefillUrl)
   const [jobDescription, setJobDescription] = useState('')
-  const [scrapedText, setScrapedText] = useState('')
   const [extracted, setExtracted] = useState<ExtractedDetails>({ company: '', role: '' })
   const [error, setError] = useState('')
   const [scraping, setScraping] = useState(false)
-  const [generatingMsg, setGeneratingMsg] = useState('Analyzing job description…')
+  const [progressStep, setProgressStep] = useState(0)
   const [result, setResult] = useState<{ jobId: string; content: string } | null>(null)
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Auto-focus textarea on mount
   useEffect(() => {
-    if (!prefillUrl) {
-      textareaRef.current?.focus()
-    }
+    if (!prefillUrl) textareaRef.current?.focus()
   }, [prefillUrl])
 
-  // If prefilled URL arrives, immediately start scraping
   useEffect(() => {
     if (prefillUrl && looksLikeUrl(prefillUrl)) {
       void handleScrapeAndAdvance(prefillUrl)
@@ -135,14 +75,11 @@ export default function NewGenerateClient({ prefillUrl, hasProfile }: NewGenerat
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // ── Step 1: handle paste / URL detection ──────────────────────────────────
-
   async function handleScrapeAndAdvance(url: string) {
     setScraping(true)
     setError('')
     try {
       const text = await scrapeJobPost(url)
-      setScrapedText(text)
       setJobDescription(text)
       const details = await extractJobDetails(text)
       setExtracted(details)
@@ -165,23 +102,19 @@ export default function NewGenerateClient({ prefillUrl, hasProfile }: NewGenerat
     if (looksLikeUrl(value)) {
       await handleScrapeAndAdvance(value)
     } else {
-      // It's raw text
-      const text = value
-      setJobDescription(text)
+      setJobDescription(value)
       setScraping(true)
       try {
-        const details = await extractJobDetails(text)
+        const details = await extractJobDetails(value)
         setExtracted(details)
       } catch {
-        // Non-fatal — user can fill in manually
+        // Non-fatal
       } finally {
         setScraping(false)
       }
       setStep('confirm')
     }
   }
-
-  // ── Step 2: confirm details ───────────────────────────────────────────────
 
   async function handleGenerate() {
     if (!extracted.company.trim() || !extracted.role.trim()) {
@@ -195,77 +128,70 @@ export default function NewGenerateClient({ prefillUrl, hasProfile }: NewGenerat
 
     setError('')
     setStep('generating')
+    setProgressStep(0)
 
-    const messages = [
-      'Analyzing job description…',
-      'Matching your skills to the role…',
-      'Crafting tailored resume…',
-      'Optimizing for ATS…',
-      'Almost done…',
+    const progressMessages = [
+      { delay: 0 },
+      { delay: 2500 },
+      { delay: 5500 },
     ]
-    let i = 0
-    setGeneratingMsg(messages[0])
-    const interval = setInterval(() => {
-      i = Math.min(i + 1, messages.length - 1)
-      setGeneratingMsg(messages[i])
-    }, 3500)
+    const timers: NodeJS.Timeout[] = []
+    progressMessages.forEach((msg, i) => {
+      if (i > 0) {
+        timers.push(setTimeout(() => setProgressStep(i), msg.delay))
+      }
+    })
 
     startTransition(async () => {
       try {
-        const res = await createJobAndGenerate(
-          extracted.company,
-          extracted.role,
-          jobDescription
-        )
-        clearInterval(interval)
+        const res = await createJobAndGenerate(extracted.company, extracted.role, jobDescription)
+        timers.forEach(clearTimeout)
         setResult(res)
         setStep('done')
       } catch (e) {
-        clearInterval(interval)
+        timers.forEach(clearTimeout)
         setError(e instanceof Error ? e.message : 'Generation failed. Please try again.')
         setStep('confirm')
       }
     })
   }
 
-  // ── Step 4: done — navigate to job page ───────────────────────────────────
-
   function handleViewFull() {
-    if (result) {
-      router.push(`/generate/${result.jobId}`)
-    }
+    if (result) router.push(`/generate/${result.jobId}`)
   }
 
-  function handleBackToDashboard() {
-    router.push('/dashboard')
-  }
-
-  // ── Render ─────────────────────────────────────────────────────────────────
+  const progressSteps = [
+    { label: 'Job analyzed', icon: '✓' },
+    { label: 'Skills matched', icon: '✓' },
+    { label: 'Writing your resume...', icon: '⟳' },
+  ]
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start px-4 pt-12 pb-32 md:pt-20">
+    <div className="flex min-h-screen flex-col items-center justify-start px-4 pb-32 pt-12 md:pt-20">
       <div className="w-full max-w-xl">
         {/* Header */}
         <div className="mb-6">
           <button
-            onClick={handleBackToDashboard}
-            className="text-sm text-white/40 hover:text-white/70 transition-colors mb-4 flex items-center gap-1"
+            onClick={() => router.push('/dashboard')}
+            className="mb-4 flex items-center gap-1 text-sm text-white/40 transition-colors hover:text-white/70"
           >
-            ← Dashboard
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Dashboard
           </button>
           <h1 className="text-2xl font-bold text-white">New Application</h1>
-          <p className="text-sm text-white/50 mt-1">
+          <p className="mt-1 text-sm text-white/50">
             Paste a job URL or description to generate a tailored resume
           </p>
         </div>
 
-        {/* No profile warning */}
         {!hasProfile && (
-          <div className="mb-6 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-sm text-amber-300">
+          <div className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-300">
             <span className="font-semibold">Profile required.</span>{' '}
             <button
               onClick={() => router.push('/profile')}
-              className="underline underline-offset-2 hover:text-amber-200 transition-colors"
+              className="underline underline-offset-2 transition-colors hover:text-amber-200"
             >
               Complete your profile
             </button>{' '}
@@ -273,11 +199,8 @@ export default function NewGenerateClient({ prefillUrl, hasProfile }: NewGenerat
           </div>
         )}
 
-        <StepIndicator current={step} />
-
         <AnimatePresence mode="wait">
-
-          {/* ── Step 1: Input ── */}
+          {/* Step 1: Input */}
           {step === 'input' && (
             <motion.div
               key="input"
@@ -287,9 +210,6 @@ export default function NewGenerateClient({ prefillUrl, hasProfile }: NewGenerat
               transition={{ duration: 0.2 }}
             >
               <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                <label className="block text-sm font-medium text-white/70 mb-3">
-                  Job URL or description
-                </label>
                 <textarea
                   ref={textareaRef}
                   value={input}
@@ -300,8 +220,8 @@ export default function NewGenerateClient({ prefillUrl, hasProfile }: NewGenerat
                       void handleInputNext()
                     }
                   }}
-                  placeholder="https://jobs.company.com/role/12345  — or paste the full job description here…"
-                  className="w-full min-h-[160px] bg-transparent text-sm text-white placeholder:text-white/25 resize-none outline-none leading-relaxed"
+                  placeholder="Paste job description or drop a URL..."
+                  className="w-full min-h-[180px] bg-transparent text-sm text-white placeholder:text-white/25 resize-none outline-none leading-relaxed"
                 />
               </div>
 
@@ -312,25 +232,24 @@ export default function NewGenerateClient({ prefillUrl, hasProfile }: NewGenerat
               <button
                 onClick={() => void handleInputNext()}
                 disabled={scraping || !input.trim()}
-                className="mt-4 h-14 w-full rounded-2xl bg-[#7F77DD] hover:bg-[#6e66cc] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-base transition-all flex items-center justify-center gap-2"
+                className="mt-4 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#7F77DD] text-base font-semibold text-white transition-all hover:bg-[#6e66cc] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {scraping ? (
                   <>
                     <SpinnerIcon />
-                    Scraping job post…
+                    Scraping job post...
                   </>
                 ) : (
-                  'Continue →'
+                  <>
+                    <SparkleIcon className="w-5 h-5" />
+                    Generate
+                  </>
                 )}
               </button>
-
-              <p className="mt-3 text-center text-xs text-white/30">
-                ⌘ + Enter to continue
-              </p>
             </motion.div>
           )}
 
-          {/* ── Step 2: Confirm details ── */}
+          {/* Step 2: Confirm details */}
           {step === 'confirm' && (
             <motion.div
               key="confirm"
@@ -341,11 +260,11 @@ export default function NewGenerateClient({ prefillUrl, hasProfile }: NewGenerat
             >
               <div className="rounded-2xl border border-white/10 bg-white/5 p-5 space-y-4">
                 <p className="text-sm text-white/50">
-                  We extracted these details — confirm or edit before generating.
+                  Confirm these details before generating.
                 </p>
 
                 <div>
-                  <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wide">
+                  <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/50">
                     Company
                   </label>
                   <input
@@ -353,12 +272,12 @@ export default function NewGenerateClient({ prefillUrl, hasProfile }: NewGenerat
                     value={extracted.company}
                     onChange={(e) => setExtracted((prev) => ({ ...prev, company: e.target.value }))}
                     placeholder="e.g. Acme Corp"
-                    className="w-full h-11 rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-white/25 outline-none focus:border-[#7F77DD]/60 transition-colors"
+                    className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-white/25 outline-none transition-colors focus:border-[#7F77DD]/60"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wide">
+                  <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/50">
                     Role
                   </label>
                   <input
@@ -366,18 +285,17 @@ export default function NewGenerateClient({ prefillUrl, hasProfile }: NewGenerat
                     value={extracted.role}
                     onChange={(e) => setExtracted((prev) => ({ ...prev, role: e.target.value }))}
                     placeholder="e.g. Senior Frontend Engineer"
-                    className="w-full h-11 rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-white/25 outline-none focus:border-[#7F77DD]/60 transition-colors"
+                    className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-white/25 outline-none transition-colors focus:border-[#7F77DD]/60"
                   />
                 </div>
 
-                {/* Show snippet of JD so user can verify */}
                 {jobDescription && (
                   <div>
-                    <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wide">
+                    <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/50">
                       Job description preview
                     </label>
-                    <div className="rounded-xl border border-white/8 bg-black/20 p-3 text-xs text-white/40 leading-relaxed max-h-28 overflow-y-auto">
-                      {jobDescription.slice(0, 400)}…
+                    <div className="max-h-28 overflow-y-auto rounded-xl border border-white/5 bg-black/20 p-3 text-xs leading-relaxed text-white/40">
+                      {jobDescription.slice(0, 400)}...
                     </div>
                   </div>
                 )}
@@ -390,22 +308,26 @@ export default function NewGenerateClient({ prefillUrl, hasProfile }: NewGenerat
               <div className="mt-4 flex gap-3">
                 <button
                   onClick={() => { setStep('input'); setError('') }}
-                  className="h-11 flex-1 rounded-xl border border-white/10 text-white/60 hover:text-white hover:border-white/20 text-sm font-medium transition-all"
+                  className="flex h-11 flex-1 items-center justify-center rounded-xl border border-white/10 text-sm font-medium text-white/60 transition-all hover:border-white/20 hover:text-white"
                 >
-                  ← Back
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                  Back
                 </button>
                 <button
                   onClick={() => void handleGenerate()}
                   disabled={isPending || !extracted.company.trim() || !extracted.role.trim() || !hasProfile}
-                  className="h-14 flex-[3] rounded-2xl bg-[#7F77DD] hover:bg-[#6e66cc] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-base transition-all flex items-center justify-center gap-2"
+                  className="flex h-14 flex-3 items-center justify-center gap-2 rounded-2xl bg-[#7F77DD] text-base font-semibold text-white transition-all hover:bg-[#6e66cc] disabled:cursor-not-allowed disabled:opacity-40"
                 >
+                  <SparkleIcon className="w-5 h-5" />
                   Generate Resume + Cover Letter
                 </button>
               </div>
             </motion.div>
           )}
 
-          {/* ── Step 3: Generating ── */}
+          {/* Step 3: Generating */}
           {step === 'generating' && (
             <motion.div
               key="generating"
@@ -413,40 +335,84 @@ export default function NewGenerateClient({ prefillUrl, hasProfile }: NewGenerat
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.97 }}
               transition={{ duration: 0.25 }}
-              className="flex flex-col items-center justify-center py-16 text-center"
             >
-              {/* Animated ring */}
-              <div className="relative mb-8">
-                <div className="w-20 h-20 rounded-full border-2 border-white/10" />
-                <div className="absolute inset-0 w-20 h-20 rounded-full border-2 border-t-[#7F77DD] animate-spin" />
-                <div className="absolute inset-0 flex items-center justify-center text-2xl">✨</div>
+              {/* Desktop: centered progress */}
+              <div className="hidden flex-col items-center justify-center py-16 text-center lg:flex">
+                <div className="relative mb-8">
+                  <div className="h-20 w-20 rounded-full border-2 border-white/10" />
+                  <div className="absolute inset-0 h-20 w-20 animate-spin rounded-full border-2 border-t-[#7F77DD]" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <SparkleIcon className="w-8 h-8 text-[#7F77DD]" />
+                  </div>
+                </div>
+                <p className="mb-2 text-lg font-medium text-white">
+                  {progressSteps[Math.min(progressStep, progressSteps.length - 1)].label}
+                </p>
+                <p className="text-sm text-white/40">
+                  Generating for{' '}
+                  <span className="text-white/70">{extracted.role} @ {extracted.company}</span>
+                </p>
+                <p className="mt-6 text-xs text-white/25">This usually takes 15–30 seconds</p>
               </div>
 
-              <motion.p
-                key={generatingMsg}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.3 }}
-                className="text-white font-medium text-lg mb-2"
-              >
-                {generatingMsg}
-              </motion.p>
-
-              <p className="text-sm text-white/40">
-                Generating for{' '}
-                <span className="text-white/70">
+              {/* Mobile: bottom sheet progress */}
+              <div className="flex flex-col items-center justify-center py-20 text-center lg:hidden">
+                <div className="relative mb-6">
+                  <div className="h-16 w-16 rounded-full border-2 border-white/10" />
+                  <div className="absolute inset-0 h-16 w-16 animate-spin rounded-full border-2 border-t-[#7F77DD]" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <SparkleIcon className="w-6 h-6 text-[#7F77DD]" />
+                  </div>
+                </div>
+                <p className="mb-6 text-sm text-white/40">
                   {extracted.role} @ {extracted.company}
-                </span>
-              </p>
-
-              <p className="text-xs text-white/25 mt-6">
-                This usually takes 15–30 seconds
-              </p>
+                </p>
+                <div className="w-full space-y-3">
+                  {progressSteps.map((s, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: i <= progressStep ? 1 : 0.25, x: 0 }}
+                      transition={{ delay: i * 0.15 }}
+                      className="flex items-center gap-3"
+                    >
+                      <div
+                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs ${
+                          i < progressStep
+                            ? 'bg-[#97C459] text-white'
+                            : i === progressStep
+                            ? 'bg-[#7F77DD] text-white'
+                            : 'bg-white/5 text-[#52525b]'
+                        }`}
+                      >
+                        {i < progressStep ? (
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        ) : i === progressStep ? (
+                          <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                        ) : (
+                          '·'
+                        )}
+                      </div>
+                      <span
+                        className={`text-sm ${
+                          i === progressStep ? 'font-medium text-[#e4e4e7]' : i < progressStep ? 'text-[#71717a]' : 'text-[#3f3f46]'
+                        }`}
+                      >
+                        {s.label}
+                      </span>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
             </motion.div>
           )}
 
-          {/* ── Step 4: Done ── */}
+          {/* Step 4: Done */}
           {step === 'done' && result && (
             <motion.div
               key="done"
@@ -454,28 +420,30 @@ export default function NewGenerateClient({ prefillUrl, hasProfile }: NewGenerat
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
             >
-              {/* Success banner */}
-              <div className="mb-5 rounded-2xl border border-green-500/30 bg-green-500/10 p-4 flex items-start gap-3">
-                <span className="text-green-400 text-xl mt-0.5">✓</span>
+              <div className="mb-5 flex items-start gap-3 rounded-2xl border border-green-500/30 bg-green-500/10 p-4">
+                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-green-500/30 text-green-300">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </span>
                 <div>
                   <p className="text-sm font-semibold text-green-300">Documents generated!</p>
-                  <p className="text-xs text-green-400/70 mt-0.5">
-                    Resume and cover letter ready for {extracted.role} @ {extracted.company}
+                  <p className="mt-0.5 text-xs text-green-400/70">
+                    Resume ready for {extracted.role} @ {extracted.company}
                   </p>
                 </div>
               </div>
 
-              {/* Skill pills preview */}
               {extractTopSkills(result.content).length > 0 && (
-                <div className="mb-5 rounded-xl border border-white/8 bg-white/5 p-4">
-                  <p className="text-xs text-white/40 mb-3 uppercase tracking-wide font-medium">
+                <div className="mb-5 rounded-xl border border-white/5 bg-white/5 p-4">
+                  <p className="mb-3 text-xs font-medium uppercase tracking-wide text-white/40">
                     Skills highlighted
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {extractTopSkills(result.content).map((skill) => (
                       <span
                         key={skill}
-                        className="px-2.5 py-1 rounded-full border border-[#7F77DD]/40 bg-[#7F77DD]/10 text-xs text-[#a09aee]"
+                        className="rounded-full border border-[#7F77DD]/40 bg-[#7F77DD]/10 px-2.5 py-1 text-xs text-[#a09aee]"
                       >
                         {skill}
                       </span>
@@ -484,24 +452,22 @@ export default function NewGenerateClient({ prefillUrl, hasProfile }: NewGenerat
                 </div>
               )}
 
-              {/* Actions */}
               <div className="space-y-3">
                 <button
                   onClick={handleViewFull}
-                  className="h-14 w-full rounded-2xl bg-[#7F77DD] hover:bg-[#6e66cc] text-white font-semibold text-base transition-all"
+                  className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#7F77DD] text-base font-semibold text-white transition-all hover:bg-[#6e66cc]"
                 >
                   View & Download Documents
                 </button>
                 <button
-                  onClick={handleBackToDashboard}
-                  className="h-11 w-full rounded-xl border border-white/10 text-white/60 hover:text-white hover:border-white/20 text-sm font-medium transition-all"
+                  onClick={() => router.push('/dashboard')}
+                  className="flex h-11 w-full items-center justify-center rounded-xl border border-white/10 text-sm font-medium text-white/60 transition-all hover:border-white/20 hover:text-white"
                 >
                   Back to Dashboard
                 </button>
               </div>
             </motion.div>
           )}
-
         </AnimatePresence>
       </div>
     </div>
