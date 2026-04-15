@@ -85,10 +85,10 @@ export default function ApplicationCard({ job, index, onDelete }: ApplicationCar
         exit={{ opacity: 0, scale: 0.92, y: -8 }}
         transition={{ delay: Math.min(index, 12) * 0.04, duration: 0.22 }}
         whileHover={{ scale: 1.01 }}
-        className={`group relative w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-white/5 bg-[#1a1a1e] p-4 transition-colors hover:bg-[#222226] sm:p-5 ${saving ? 'opacity-70' : ''}`}
+        className={`group relative flex w-full min-w-0 max-w-full max-h-32 flex-col overflow-hidden rounded-2xl border border-white/5 bg-[#1a1a1e] p-3 transition-colors hover:bg-[#222226] sm:max-h-none sm:p-5 ${saving ? 'opacity-70' : ''}`}
       >
-        {/* Top row: company + status + generate */}
-        <div className="flex items-start justify-between gap-3">
+        {/* Top row: company + status + (desktop-only) generate */}
+        <div className="flex items-start justify-between gap-2 sm:gap-3">
           <div className="min-w-0 flex-1">
             {editingField === 'company' ? (
               <input
@@ -98,24 +98,24 @@ export default function ApplicationCard({ job, index, onDelete }: ApplicationCar
                 autoFocus
                 onBlur={(e) => handleBlur('company', e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, 'company')}
-                className="h-10 w-full rounded-lg bg-white/5 px-3 text-base font-semibold text-[#e4e4e7] outline-none ring-1 ring-[#7F77DD]/40"
+                className="h-7 w-full rounded-lg bg-white/5 px-2 text-sm font-semibold text-[#e4e4e7] outline-none ring-1 ring-[#7F77DD]/40 sm:h-10 sm:px-3 sm:text-base"
               />
             ) : (
               <button
                 type="button"
                 onClick={() => setEditingField('company')}
-                className="min-h-10 w-full truncate text-left text-base font-semibold text-[#e4e4e7] hover:text-white"
+                className="block w-full min-w-0 truncate whitespace-nowrap text-left text-sm font-semibold leading-tight text-[#e4e4e7] hover:text-white sm:min-h-10 sm:text-base sm:leading-normal"
               >
                 {data.company}
               </button>
             )}
           </div>
 
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex flex-shrink-0 flex-col items-end gap-2">
             <StatusBadge status={data.status} onClick={cycleStatus} />
             <a
               href={`/generate/${data.id}`}
-              className="inline-flex h-7 items-center gap-1 rounded-full border border-[#7F77DD]/25 bg-[#7F77DD]/10 px-2.5 text-[11px] font-medium text-[#AFA9EC] transition-colors hover:bg-[#7F77DD]/20 hover:text-[#d4d0f7]"
+              className="hidden h-7 items-center gap-1 rounded-full border border-[#7F77DD]/25 bg-[#7F77DD]/10 px-2.5 text-[11px] font-medium text-[#AFA9EC] transition-colors hover:bg-[#7F77DD]/20 hover:text-[#d4d0f7] sm:inline-flex"
             >
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" />
@@ -125,8 +125,8 @@ export default function ApplicationCard({ job, index, onDelete }: ApplicationCar
           </div>
         </div>
 
-        {/* Role */}
-        <div className="mt-1">
+        {/* Role — single line truncate */}
+        <div className="mt-0.5 min-w-0 sm:mt-1">
           {editingField === 'role' ? (
             <input
               ref={roleRef}
@@ -135,21 +135,21 @@ export default function ApplicationCard({ job, index, onDelete }: ApplicationCar
               autoFocus
               onBlur={(e) => handleBlur('role', e.target.value)}
               onKeyDown={(e) => handleKeyDown(e, 'role')}
-              className="h-9 w-full rounded-lg bg-white/5 px-3 text-sm text-[#a1a1aa] outline-none ring-1 ring-[#7F77DD]/40"
+              className="h-7 w-full rounded-lg bg-white/5 px-2 text-xs text-[#a1a1aa] outline-none ring-1 ring-[#7F77DD]/40 sm:h-9 sm:px-3 sm:text-sm"
             />
           ) : (
             <button
               type="button"
               onClick={() => setEditingField('role')}
-              className="min-h-9 truncate text-left text-sm text-[#a1a1aa] hover:text-[#d4d4d8]"
+              className="block w-full min-w-0 truncate whitespace-nowrap text-left text-xs leading-tight text-[#a1a1aa] hover:text-[#d4d4d8] sm:min-h-9 sm:text-sm sm:leading-normal"
             >
               {data.role}
             </button>
           )}
         </div>
 
-        {/* Notes */}
-        <div className="mt-2">
+        {/* Notes — 2-line clamp on mobile, compact leading */}
+        <div className="mt-1 min-w-0 flex-1 sm:mt-2 sm:flex-none">
           {editingField === 'notes' ? (
             <textarea
               ref={notesRef}
@@ -158,36 +158,57 @@ export default function ApplicationCard({ job, index, onDelete }: ApplicationCar
               rows={2}
               onBlur={(e) => handleBlur('notes', e.target.value)}
               onKeyDown={(e) => handleKeyDown(e, 'notes')}
-              className="w-full resize-none rounded-lg bg-white/5 px-3 py-2 text-sm text-[#a1a1aa] outline-none ring-1 ring-[#7F77DD]/40"
+              className="w-full resize-none rounded-lg bg-white/5 px-2 py-1.5 text-xs text-[#a1a1aa] outline-none ring-1 ring-[#7F77DD]/40 sm:px-3 sm:py-2 sm:text-sm"
             />
           ) : (
             <button
               type="button"
               onClick={() => setEditingField('notes')}
-              className="min-h-9 w-full text-left text-sm leading-relaxed text-[#52525b] hover:text-[#71717a]"
+              className="block w-full min-w-0 text-left text-xs leading-snug text-[#52525b] hover:text-[#71717a] sm:min-h-9 sm:text-sm sm:leading-relaxed"
             >
-              <span className="line-clamp-2">{data.notes || 'Add notes...'}</span>
+              <span
+                className="block overflow-hidden"
+                style={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  wordBreak: 'break-word',
+                }}
+              >
+                {data.notes || 'Add notes...'}
+              </span>
             </button>
           )}
         </div>
 
-        {/* Footer: date + delete */}
-        <div className="mt-3 flex items-center justify-between">
-          <span className="text-xs text-[#52525b]">
+        {/* Footer: date + generate (mobile) + delete */}
+        <div className="mt-1.5 flex flex-shrink-0 items-center justify-between gap-2 sm:mt-3">
+          <span className="min-w-0 truncate text-[10px] text-[#52525b] sm:text-xs">
             {new Date(data.appliedDate).toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric',
               year: 'numeric',
             })}
           </span>
-          <button
-            type="button"
-            onClick={() => setConfirmDelete(true)}
-            className="flex h-8 items-center rounded-lg px-2 text-xs text-[#52525b] transition-colors hover:bg-[#A32D2D22] hover:text-[#F09595]"
-            aria-label="Delete application"
-          >
-            Delete
-          </button>
+          <div className="flex flex-shrink-0 items-center gap-1">
+            <a
+              href={`/generate/${data.id}`}
+              className="inline-flex h-6 items-center gap-1 rounded-full border border-[#7F77DD]/25 bg-[#7F77DD]/10 px-2 text-[10px] font-medium text-[#AFA9EC] transition-colors hover:bg-[#7F77DD]/20 hover:text-[#d4d0f7] sm:hidden"
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" />
+              </svg>
+              Generate
+            </a>
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              className="flex h-6 items-center rounded-lg px-1.5 text-[10px] text-[#52525b] transition-colors hover:bg-[#A32D2D22] hover:text-[#F09595] sm:h-8 sm:px-2 sm:text-xs"
+              aria-label="Delete application"
+            >
+              Delete
+            </button>
+          </div>
         </div>
       </motion.div>
 
