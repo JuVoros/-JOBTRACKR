@@ -9,6 +9,7 @@ import {
 } from '../../actions/generate'
 
 type Tab = 'resume' | 'cover_letter'
+type View = 'input' | 'result'
 
 interface ExistingDoc {
   id: string
@@ -41,15 +42,6 @@ const CL_STEPS = ['Job analyzed', 'Skills matched', 'Writing your cover letter..
 
 function looksLikeUrl(value: string): boolean {
   return /^https?:\/\//i.test(value.trim())
-}
-
-function getDomain(url: string): string {
-  try {
-    const u = new URL(url.trim())
-    return u.hostname.replace(/^www\./i, '')
-  } catch {
-    return url.trim().slice(0, 40)
-  }
 }
 
 // ── Icons ──────────────────────────────────────────────────────────────────────
@@ -87,16 +79,7 @@ function SpinnerIcon({ size = 18 }: { size?: number }) {
   )
 }
 
-function LinkIcon({ size = 12 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.72" />
-      <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.72-1.72" />
-    </svg>
-  )
-}
-
-// ── Loading progress (bottom sheet on mobile, inline on desktop) ──────────────
+// ── Loading progress ──────────────────────────────────────────────────────────
 
 function ProgressStep({
   state,
@@ -202,17 +185,23 @@ export default function GenerateClient({
   hasProfile,
   contactInfo,
 }: GenerateClientProps) {
+  const initialContent = useMemo<Record<Tab, string>>(
+    () => ({
+      resume: existingDocs.find((d) => d.type === 'resume')?.content ?? '',
+      cover_letter: existingDocs.find((d) => d.type === 'cover_letter')?.content ?? '',
+    }),
+    [existingDocs]
+  )
+
   const [tab, setTab] = useState<Tab>('resume')
   const [input, setInput] = useState('')
-  const [sourceUrl, setSourceUrl] = useState('')
-  const [content, setContent] = useState<Record<Tab, string>>({
-    resume: existingDocs.find((d) => d.type === 'resume')?.content ?? '',
-    cover_letter: existingDocs.find((d) => d.type === 'cover_letter')?.content ?? '',
-  })
+  const [content, setContent] = useState<Record<Tab, string>>(initialContent)
+  const [view, setView] = useState<View>(
+    initialContent.resume || initialContent.cover_letter ? 'result' : 'input'
+  )
   const [isPending, startTransition] = useTransition()
   const [loadingStep, setLoadingStep] = useState(0)
   const [error, setError] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
   const [downloading, setDownloading] = useState(false)
   const [scraping, setScraping] = useState(false)
 
@@ -238,7 +227,6 @@ export default function GenerateClient({
 
     if (looksLikeUrl(trimmed)) {
       setScraping(true)
-      setSourceUrl(trimmed)
       try {
         const text = await scrapeJobPost(trimmed)
         return text
@@ -247,7 +235,6 @@ export default function GenerateClient({
       }
     }
 
-    setSourceUrl('')
     return trimmed
   }, [input])
 
@@ -262,6 +249,7 @@ export default function GenerateClient({
             ? await generateResume(jobId, jd)
             : await generateCoverLetter(jobId, jd)
         setContent((prev) => ({ ...prev, [tab]: result }))
+        setView('result')
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Generation failed')
       }
@@ -300,18 +288,24 @@ export default function GenerateClient({
     }
   }, [content, tab, company, role, contactInfo])
 
-  const handleCopy = useCallback(async () => {
-    const text = content[tab]
-    if (!text) return
-    await navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }, [content, tab])
+  const handleSelectTab = useCallback(
+    (next: Tab) => {
+      setTab(next)
+      // Keep result view if that tab has content; otherwise fall back to input view
+      if (content[next]) setView('result')
+      else setView('input')
+    },
+    [content]
+  )
+
+  const handleRegenerate = useCallback(() => {
+    setError(null)
+    setView('input')
+  }, [])
 
   const hasInput = input.trim().length > 0
   const currentContent = content[tab]
-  const hasAnyContent = !!content.resume || !!content.cover_letter
-  const domain = useMemo(() => (sourceUrl ? getDomain(sourceUrl) : null), [sourceUrl])
+  const tabLabel = tab === 'resume' ? 'Resume' : 'Cover Letter'
 
   if (!hasProfile) {
     return (
@@ -331,44 +325,7 @@ export default function GenerateClient({
     )
   }
 
-  // ── Shared subcomponents ────────────────────────────────────────────────────
-
-  const JobMeta = (
-    <div className="rounded-2xl border border-white/5 bg-[#1a1a1e] p-4 sm:p-5">
-      <p className="truncate text-base font-semibold text-[#e4e4e7]">{company}</p>
-      <p className="truncate text-sm text-[#71717a]">{role}</p>
-      {domain && (
-        <a
-          href={sourceUrl}
-          target="_blank"
-          rel="noreferrer noopener"
-          className="mt-2 inline-flex max-w-full items-center gap-1 overflow-hidden text-xs text-[#7F77DD] hover:text-[#938BF0]"
-          title={sourceUrl}
-        >
-          <LinkIcon />
-          <span className="overflow-hidden text-ellipsis whitespace-nowrap">{domain}</span>
-        </a>
-      )}
-    </div>
-  )
-
-  const InputCard = (
-    <div className="rounded-2xl border border-white/5 bg-[#1a1a1e] p-4 sm:p-5">
-      <label className="mb-2 block text-sm font-medium text-[#e4e4e7]">Job description</label>
-      <textarea
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        rows={8}
-        placeholder="Paste job description or drop a URL"
-        className="min-h-[180px] w-full resize-none rounded-xl border border-white/5 bg-[#0d0d0f] px-4 py-3 text-base leading-relaxed text-[#e4e4e7] placeholder-[#3f3f46] outline-none transition-colors focus:border-[#7F77DD]/40 sm:text-sm"
-      />
-      {scraping && (
-        <p className="mt-2 flex items-center gap-2 text-xs text-[#7F77DD]">
-          <SpinnerIcon size={12} /> Fetching job post...
-        </p>
-      )}
-    </div>
-  )
+  // ── Shared UI fragments ────────────────────────────────────────────────────
 
   const Tabs = (
     <div className="flex gap-1.5 rounded-2xl border border-white/5 bg-[#1a1a1e] p-1.5">
@@ -376,7 +333,7 @@ export default function GenerateClient({
         <button
           key={t}
           type="button"
-          onClick={() => setTab(t)}
+          onClick={() => handleSelectTab(t)}
           className={`relative flex h-12 flex-1 items-center justify-center rounded-xl px-4 text-sm font-medium transition-colors ${
             tab === t ? 'text-[#e4e4e7]' : 'text-[#52525b] hover:text-[#a1a1aa]'
           }`}
@@ -394,29 +351,6 @@ export default function GenerateClient({
     </div>
   )
 
-  const GenerateButton = (
-    <motion.button
-      type="button"
-      onClick={handleGenerate}
-      disabled={isPending || !hasInput}
-      whileTap={{ scale: 0.98 }}
-      className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#7F77DD] text-base font-semibold text-white transition-colors hover:bg-[#938BF0] disabled:opacity-50"
-    >
-      {isPending ? (
-        <>
-          <SpinnerIcon /> Generating...
-        </>
-      ) : (
-        <>
-          <SparkleIcon size={18} />
-          {currentContent
-            ? `Regenerate ${tab === 'resume' ? 'Resume' : 'Cover Letter'}`
-            : `Generate ${tab === 'resume' ? 'Resume' : 'Cover Letter'}`}
-        </>
-      )}
-    </motion.button>
-  )
-
   const ErrorBanner = (
     <AnimatePresence>
       {error && (
@@ -432,6 +366,177 @@ export default function GenerateClient({
     </AnimatePresence>
   )
 
+  // ── Input view ─────────────────────────────────────────────────────────────
+
+  const InputView = (
+    <motion.div
+      key="input-view"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.22 }}
+      className="w-full space-y-5"
+    >
+      {/* Job meta header */}
+      <div className="rounded-2xl border border-white/5 bg-[#1a1a1e] p-4 sm:p-5">
+        <p className="truncate text-base font-semibold text-[#e4e4e7]">{company}</p>
+        <p className="truncate text-sm text-[#71717a]">{role}</p>
+      </div>
+
+      {Tabs}
+
+      {/* Input card */}
+      <div className="rounded-2xl border border-white/5 bg-[#1a1a1e] p-4 sm:p-5">
+        <label className="mb-2 block text-sm font-medium text-[#e4e4e7]">
+          Job description
+        </label>
+        <textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          rows={8}
+          placeholder="Paste job description or drop a URL"
+          className="min-h-[180px] w-full resize-none rounded-xl border border-white/5 bg-[#0d0d0f] px-4 py-3 text-base leading-relaxed text-[#e4e4e7] placeholder-[#3f3f46] outline-none transition-colors focus:border-[#7F77DD]/40 sm:text-sm"
+        />
+        {scraping && (
+          <p className="mt-2 flex items-center gap-2 text-xs text-[#7F77DD]">
+            <SpinnerIcon size={12} /> Fetching job post...
+          </p>
+        )}
+      </div>
+
+      <motion.button
+        type="button"
+        onClick={handleGenerate}
+        disabled={isPending || !hasInput}
+        whileTap={{ scale: 0.98 }}
+        className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#7F77DD] text-base font-semibold text-white transition-colors hover:bg-[#938BF0] disabled:opacity-50"
+      >
+        {isPending ? (
+          <>
+            <SpinnerIcon /> Generating...
+          </>
+        ) : (
+          <>
+            <SparkleIcon size={18} />
+            {currentContent ? `Regenerate ${tabLabel}` : `Generate ${tabLabel}`}
+          </>
+        )}
+      </motion.button>
+
+      {ErrorBanner}
+
+      {/* Desktop inline progress */}
+      {isPending && (
+        <div className="hidden rounded-2xl border border-white/5 bg-[#1a1a1e] px-6 py-6 lg:block">
+          <div className="space-y-4">
+            {steps.map((s, i) => (
+              <ProgressStep key={i} state={stateFor(i, loadingStep)} label={s} />
+            ))}
+          </div>
+        </div>
+      )}
+    </motion.div>
+  )
+
+  // ── Result view ────────────────────────────────────────────────────────────
+
+  const ResultView = (
+    <motion.div
+      key="result-view"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.22 }}
+      className="w-full space-y-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-0"
+    >
+      {/* Header */}
+      <div>
+        <p className="text-xs font-medium uppercase tracking-wider text-[#52525b]">
+          {tabLabel}
+        </p>
+        <h2 className="mt-1 text-xl font-semibold text-[#e4e4e7] sm:text-2xl">
+          {tabLabel} for {company}
+        </h2>
+      </div>
+
+      {Tabs}
+
+      {/* Content */}
+      <div className="rounded-2xl border border-white/5 bg-[#1a1a1e] p-4 sm:p-6">
+        <pre className="max-h-[60vh] overflow-auto whitespace-pre-wrap text-sm leading-relaxed text-[#d4d4d8] lg:max-h-[62vh]">
+          {currentContent}
+        </pre>
+      </div>
+
+      {ErrorBanner}
+
+      {/* Desktop inline actions */}
+      <div className="hidden flex-col items-stretch gap-3 lg:flex">
+        <button
+          type="button"
+          onClick={handleDownloadPdf}
+          disabled={downloading}
+          className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#7F77DD] text-base font-semibold text-white transition-colors hover:bg-[#938BF0] disabled:opacity-50"
+        >
+          {downloading ? (
+            <>
+              <SpinnerIcon /> Generating PDF...
+            </>
+          ) : (
+            'Download PDF'
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={handleRegenerate}
+          className="h-11 w-full text-sm font-medium text-[#a1a1aa] transition-colors hover:text-[#e4e4e7]"
+        >
+          Regenerate
+        </button>
+      </div>
+    </motion.div>
+  )
+
+  // ── Mobile fixed download bar (only in result view) ───────────────────────
+
+  const MobileDownloadBar = (
+    <AnimatePresence>
+      {view === 'result' && !!currentContent && !isPending && (
+        <motion.div
+          key="download-bar"
+          initial={{ y: 80, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 80, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 380, damping: 34 }}
+          className="fixed inset-x-0 bottom-16 z-30 border-t border-white/5 bg-[#0d0d0f]/95 px-4 pt-3 backdrop-blur-md lg:hidden"
+          style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
+        >
+          <button
+            type="button"
+            onClick={handleRegenerate}
+            className="mx-auto mb-2 block h-8 text-xs font-medium text-[#a1a1aa] transition-colors hover:text-[#e4e4e7]"
+          >
+            Regenerate
+          </button>
+          <button
+            type="button"
+            onClick={handleDownloadPdf}
+            disabled={downloading}
+            className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#7F77DD] text-base font-semibold text-white transition-colors hover:bg-[#938BF0] active:scale-[0.98] disabled:opacity-50"
+          >
+            {downloading ? (
+              <>
+                <SpinnerIcon /> Generating PDF...
+              </>
+            ) : (
+              'Download PDF'
+            )}
+          </button>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -439,127 +544,14 @@ export default function GenerateClient({
       transition={{ duration: 0.25 }}
       className="w-full"
     >
-      {/* ── Desktop: two-column layout ── */}
-      <div className="hidden gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-        {/* Left: input + controls */}
-        <div className="space-y-5">
-          {JobMeta}
-          {InputCard}
-          {Tabs}
-          {GenerateButton}
-          {ErrorBanner}
-        </div>
-
-        {/* Right: preview */}
-        <div className="space-y-4">
-          {isPending ? (
-            <div className="rounded-2xl border border-white/5 bg-[#1a1a1e] px-6 py-10">
-              <div className="space-y-4">
-                {steps.map((s, i) => (
-                  <ProgressStep key={i} state={stateFor(i, loadingStep)} label={s} />
-                ))}
-              </div>
-            </div>
-          ) : currentContent ? (
-            <>
-              <div className="rounded-2xl border border-white/5 bg-[#1a1a1e] p-5">
-                <pre className="max-h-[560px] overflow-auto whitespace-pre-wrap text-sm leading-relaxed text-[#d4d4d8]">
-                  {currentContent}
-                </pre>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={handleDownloadPdf}
-                  disabled={downloading}
-                  className="flex h-14 flex-1 items-center justify-center gap-2 rounded-2xl bg-[#7F77DD] text-base font-semibold text-white transition-colors hover:bg-[#938BF0] disabled:opacity-50"
-                >
-                  {downloading ? (
-                    <>
-                      <SpinnerIcon /> Generating PDF...
-                    </>
-                  ) : (
-                    'Download PDF'
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCopy}
-                  className="h-14 rounded-2xl border border-white/5 px-5 text-sm font-medium text-[#a1a1aa] transition-colors hover:bg-white/5 hover:text-[#e4e4e7]"
-                >
-                  {copied ? 'Copied' : 'Copy'}
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="flex min-h-[320px] items-center justify-center rounded-2xl border border-dashed border-white/5 bg-[#1a1a1e] px-6 py-12 text-center">
-              <p className="text-sm text-[#52525b]">
-                Paste a job description and generate to preview here.
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── Mobile: single-column step flow ── */}
-      <div className="space-y-5 lg:hidden">
-        {JobMeta}
-        {InputCard}
-        {hasAnyContent && Tabs}
-        {GenerateButton}
-        {ErrorBanner}
-
-        <AnimatePresence mode="wait">
-          {currentContent && !isPending && (
-            <motion.div
-              key={`${tab}-out-mobile`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="space-y-3"
-            >
-              <div className="rounded-2xl border border-white/5 bg-[#1a1a1e] p-4">
-                <pre className="max-h-[420px] overflow-auto whitespace-pre-wrap text-xs leading-relaxed text-[#d4d4d8]">
-                  {currentContent}
-                </pre>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleDownloadPdf}
-                disabled={downloading}
-                className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#7F77DD] text-base font-semibold text-white transition-colors hover:bg-[#938BF0] active:scale-[0.98] disabled:opacity-50"
-              >
-                {downloading ? (
-                  <>
-                    <SpinnerIcon /> Generating PDF...
-                  </>
-                ) : (
-                  'Download PDF'
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleCopy}
-                className="h-11 w-full rounded-xl border border-white/5 text-sm text-[#a1a1aa] transition-colors hover:bg-white/5 hover:text-[#e4e4e7]"
-              >
-                {copied ? 'Copied' : 'Copy text'}
-              </button>
-            </motion.div>
-          )}
+      <div className="mx-auto w-full max-w-2xl">
+        <AnimatePresence mode="wait" initial={false}>
+          {view === 'input' ? InputView : ResultView}
         </AnimatePresence>
-
-        {!currentContent && !isPending && !hasInput && (
-          <div className="rounded-2xl border border-dashed border-white/5 bg-[#1a1a1e] px-6 py-10 text-center">
-            <p className="text-sm text-[#52525b]">
-              Paste a job description or URL above to get started.
-            </p>
-          </div>
-        )}
-
-        <MobileProgressSheet show={isPending} step={loadingStep} steps={steps} />
       </div>
+
+      {MobileDownloadBar}
+      <MobileProgressSheet show={isPending} step={loadingStep} steps={steps} />
     </motion.div>
   )
 }

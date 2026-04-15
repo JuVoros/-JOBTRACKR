@@ -31,7 +31,7 @@ export default async function DashboardPage() {
   }))
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
+    <div className="mx-auto w-full max-w-5xl overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-[#e4e4e7]">Dashboard</h1>
         <p className="text-sm text-[#52525b]">Track your applications</p>

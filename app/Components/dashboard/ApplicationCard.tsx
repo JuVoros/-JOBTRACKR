@@ -85,7 +85,7 @@ export default function ApplicationCard({ job, index, onDelete }: ApplicationCar
         exit={{ opacity: 0, scale: 0.92, y: -8 }}
         transition={{ delay: Math.min(index, 12) * 0.04, duration: 0.22 }}
         whileHover={{ scale: 1.01 }}
-        className={`group relative rounded-2xl border border-white/5 bg-[#1a1a1e] p-4 transition-colors hover:bg-[#222226] sm:p-5 ${saving ? 'opacity-70' : ''}`}
+        className={`group relative w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-white/5 bg-[#1a1a1e] p-4 transition-colors hover:bg-[#222226] sm:p-5 ${saving ? 'opacity-70' : ''}`}
       >
         {/* Top row: company + status + generate */}
         <div className="flex items-start justify-between gap-3">

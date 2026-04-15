@@ -71,7 +71,7 @@ export default function DashboardClient({ jobs }: DashboardClientProps) {
 
   return (
     <>
-      <div className="space-y-6">
+      <div className="w-full min-w-0 space-y-6">
         <StatsRow jobs={visibleJobs} />
 
         {/* Search */}
@@ -145,7 +145,7 @@ export default function DashboardClient({ jobs }: DashboardClientProps) {
             </p>
           </div>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <AnimatePresence mode="popLayout">
               {filtered.map((job, i) => (
                 <ApplicationCard

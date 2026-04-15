@@ -18,7 +18,7 @@ export default function StatsRow({ jobs }: StatsRowProps) {
   )
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-4">
       {STAT_KEYS.map((key, i) => {
         const config = STATUS_CONFIG[key]
         return (
@@ -27,7 +27,7 @@ export default function StatsRow({ jobs }: StatsRowProps) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05, duration: 0.2 }}
-            className="rounded-2xl border border-white/5 bg-[#1a1a1e] p-4"
+            className="min-w-0 rounded-2xl border border-white/5 bg-[#1a1a1e] p-4"
           >
             <p className={`text-xs font-medium ${config.text}`}>{config.label}</p>
             <AnimatedNumber
