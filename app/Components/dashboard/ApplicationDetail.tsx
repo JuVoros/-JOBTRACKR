@@ -54,7 +54,7 @@ function SectionHeader({ title, note }: { title: string; note?: string }) {
 
 export default function ApplicationDetail({ job }: { job: JobDetail }) {
   const router = useRouter()
-  const [status, setStatus] = useState(job.status)
+  const [status, setStatus] = useState<Status>(job.status as Status)
   const [notes, setNotes] = useState(job.notes ?? '')
   const [notesDirty, setNotesDirty] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
