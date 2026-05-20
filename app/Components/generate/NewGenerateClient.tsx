@@ -37,7 +37,7 @@ function SparkleIcon({ className = 'w-5 h-5' }: { className?: string }) {
 
 function SpinnerIcon() {
   return (
-    <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+    <svg className="animate-spin w-5 h-5 text-paper" fill="none" viewBox="0 0 24 24">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
     </svg>
@@ -167,309 +167,263 @@ export default function NewGenerateClient({ prefillUrl, hasProfile }: NewGenerat
   ]
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-start px-4 pb-32 pt-12 md:pt-20">
-      <div className="w-full max-w-xl">
-        {/* Header */}
-        <div className="mb-6">
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="mb-4 flex items-center gap-1 text-sm text-white/40 transition-colors hover:text-white/70"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-            Dashboard
-          </button>
-          <h1 className="text-2xl font-bold text-white">New Application</h1>
-          <p className="mt-1 text-sm text-white/50">
-            Paste a job URL or description to generate a tailored resume
-          </p>
-        </div>
+    <div className="mx-auto max-w-xl px-4 py-8 sm:py-10">
+      {/* Header */}
+      <div className="mb-6">
+        <button
+          onClick={() => router.push('/dashboard')}
+          className="mb-4 inline-flex items-center gap-2 font-mono text-[10px] tracking-widest uppercase text-ink-mid transition-colors hover:text-ink"
+        >
+          ← DASHBOARD
+        </button>
+        <h1 className="font-display text-3xl font-light italic text-ink mt-2">New Application</h1>
+        <p className="font-mono text-[11px] text-ink-mid mt-1">
+          Paste a job URL or description to generate a tailored resume
+        </p>
+      </div>
 
-        {!hasProfile && (
-          <div className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-300">
+      {!hasProfile && (
+        <div className="border-l-[3px] border-stamp-gold bg-stamp-gold/5 px-4 py-3 mb-6">
+          <p className="font-mono text-[11px] text-stamp-gold">
             <span className="font-semibold">Profile required.</span>{' '}
             <button
               onClick={() => router.push('/profile')}
-              className="underline underline-offset-2 transition-colors hover:text-amber-200"
+              className="underline underline-offset-2 transition-colors hover:opacity-80"
             >
               Complete your profile
             </button>{' '}
             before generating documents.
-          </div>
+          </p>
+        </div>
+      )}
+
+      <AnimatePresence mode="wait">
+        {/* Step 1: Input */}
+        {step === 'input' && (
+          <motion.div
+            key="input"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.2 }}
+          >
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                  e.preventDefault()
+                  void handleInputNext()
+                }
+              }}
+              placeholder="Paste job description or drop a URL..."
+              className="w-full min-h-[180px] border border-rule bg-paper px-3 py-2.5 font-sans text-sm text-ink placeholder:text-rule resize-none outline-none leading-relaxed focus:border-ink"
+            />
+
+            {error && (
+              <div className="border-l-[3px] border-stamp-red bg-stamp-red/5 px-4 py-3 font-mono text-[11px] text-stamp-red mt-3">
+                {error}
+              </div>
+            )}
+
+            <button
+              onClick={() => void handleInputNext()}
+              disabled={scraping || !input.trim()}
+              className="mt-4 flex w-full items-center justify-center gap-2 bg-stamp-red py-3 font-mono text-[10px] tracking-widest uppercase text-paper transition-colors hover:bg-stamp-red/90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {scraping ? (
+                <>
+                  <SpinnerIcon />
+                  Scraping job post...
+                </>
+              ) : (
+                <>
+                  <SparkleIcon className="w-5 h-5" />
+                  Generate
+                </>
+              )}
+            </button>
+          </motion.div>
         )}
 
-        <AnimatePresence mode="wait">
-          {/* Step 1: Input */}
-          {step === 'input' && (
-            <motion.div
-              key="input"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                <textarea
-                  ref={textareaRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                      e.preventDefault()
-                      void handleInputNext()
-                    }
-                  }}
-                  placeholder="Paste job description or drop a URL..."
-                  className="w-full min-h-[180px] bg-transparent text-sm text-white placeholder:text-white/25 resize-none outline-none leading-relaxed"
+        {/* Step 2: Confirm details */}
+        {step === 'confirm' && (
+          <motion.div
+            key="confirm"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="space-y-4">
+              <p className="font-mono text-[11px] text-ink-mid mb-4">
+                Confirm these details before generating.
+              </p>
+
+              <div>
+                <label className="mb-1.5 block font-mono text-[10px] tracking-widest uppercase text-ink-mid">
+                  Company
+                </label>
+                <input
+                  type="text"
+                  value={extracted.company}
+                  onChange={(e) => setExtracted((prev) => ({ ...prev, company: e.target.value }))}
+                  placeholder="e.g. Acme Corp"
+                  className="h-10 w-full border border-rule bg-paper px-3 font-sans text-sm text-ink placeholder:text-rule outline-none transition-colors focus:border-ink"
                 />
               </div>
 
-              {error && (
-                <p className="mt-3 text-sm text-red-400">{error}</p>
-              )}
+              <div>
+                <label className="mb-1.5 block font-mono text-[10px] tracking-widest uppercase text-ink-mid">
+                  Role
+                </label>
+                <input
+                  type="text"
+                  value={extracted.role}
+                  onChange={(e) => setExtracted((prev) => ({ ...prev, role: e.target.value }))}
+                  placeholder="e.g. Senior Frontend Engineer"
+                  className="h-10 w-full border border-rule bg-paper px-3 font-sans text-sm text-ink placeholder:text-rule outline-none transition-colors focus:border-ink"
+                />
+              </div>
 
+              {jobDescription && (
+                <div>
+                  <label className="mb-1.5 block font-mono text-[10px] tracking-widest uppercase text-ink-mid">
+                    Job description preview
+                  </label>
+                  <div className="max-h-28 overflow-y-auto border border-rule bg-paper-alt p-3 font-sans text-xs leading-relaxed text-ink-mid">
+                    {jobDescription.slice(0, 400)}...
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {error && (
+              <div className="border-l-[3px] border-stamp-red bg-stamp-red/5 px-4 py-3 font-mono text-[11px] text-stamp-red mt-3">
+                {error}
+              </div>
+            )}
+
+            <div className="mt-4 flex gap-3">
               <button
-                onClick={() => void handleInputNext()}
-                disabled={scraping || !input.trim()}
-                className="mt-4 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#7F77DD] text-base font-semibold text-white transition-all hover:bg-[#6e66cc] disabled:cursor-not-allowed disabled:opacity-40"
+                onClick={() => { setStep('input'); setError('') }}
+                className="flex flex-1 items-center justify-center border border-rule py-2.5 px-6 font-mono text-[10px] tracking-widest uppercase text-ink-mid transition-colors hover:bg-paper-alt"
               >
-                {scraping ? (
-                  <>
-                    <SpinnerIcon />
-                    Scraping job post...
-                  </>
-                ) : (
-                  <>
-                    <SparkleIcon className="w-5 h-5" />
-                    Generate
-                  </>
-                )}
+                Back
               </button>
-            </motion.div>
-          )}
+              <button
+                onClick={() => void handleGenerate()}
+                disabled={isPending || !extracted.company.trim() || !extracted.role.trim() || !hasProfile}
+                className="flex flex-3 items-center justify-center gap-2 bg-stamp-red py-3 px-6 font-mono text-[10px] tracking-widest uppercase text-paper transition-colors hover:bg-stamp-red/90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <SparkleIcon className="w-5 h-5" />
+                Generate Resume + Cover Letter
+              </button>
+            </div>
+          </motion.div>
+        )}
 
-          {/* Step 2: Confirm details */}
-          {step === 'confirm' && (
-            <motion.div
-              key="confirm"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-5 space-y-4">
-                <p className="text-sm text-white/50">
-                  Confirm these details before generating.
-                </p>
-
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/50">
-                    Company
-                  </label>
-                  <input
-                    type="text"
-                    value={extracted.company}
-                    onChange={(e) => setExtracted((prev) => ({ ...prev, company: e.target.value }))}
-                    placeholder="e.g. Acme Corp"
-                    className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-white/25 outline-none transition-colors focus:border-[#7F77DD]/60"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/50">
-                    Role
-                  </label>
-                  <input
-                    type="text"
-                    value={extracted.role}
-                    onChange={(e) => setExtracted((prev) => ({ ...prev, role: e.target.value }))}
-                    placeholder="e.g. Senior Frontend Engineer"
-                    className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-white/25 outline-none transition-colors focus:border-[#7F77DD]/60"
-                  />
-                </div>
-
-                {jobDescription && (
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/50">
-                      Job description preview
-                    </label>
-                    <div className="max-h-28 overflow-y-auto rounded-xl border border-white/5 bg-black/20 p-3 text-xs leading-relaxed text-white/40">
-                      {jobDescription.slice(0, 400)}...
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {error && (
-                <p className="mt-3 text-sm text-red-400">{error}</p>
-              )}
-
-              <div className="mt-4 flex gap-3">
-                <button
-                  onClick={() => { setStep('input'); setError('') }}
-                  className="flex h-11 flex-1 items-center justify-center rounded-xl border border-white/10 text-sm font-medium text-white/60 transition-all hover:border-white/20 hover:text-white"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                    <polyline points="15 18 9 12 15 6" />
-                  </svg>
-                  Back
-                </button>
-                <button
-                  onClick={() => void handleGenerate()}
-                  disabled={isPending || !extracted.company.trim() || !extracted.role.trim() || !hasProfile}
-                  className="flex h-14 flex-3 items-center justify-center gap-2 rounded-2xl bg-[#7F77DD] text-base font-semibold text-white transition-all hover:bg-[#6e66cc] disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  <SparkleIcon className="w-5 h-5" />
-                  Generate Resume + Cover Letter
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Step 3: Generating */}
-          {step === 'generating' && (
-            <motion.div
-              key="generating"
-              initial={{ opacity: 0, scale: 0.97 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.97 }}
-              transition={{ duration: 0.25 }}
-            >
-              {/* Desktop: centered progress */}
-              <div className="hidden flex-col items-center justify-center py-16 text-center lg:flex">
-                <div className="relative mb-8">
-                  <div className="h-20 w-20 rounded-full border-2 border-white/10" />
-                  <div className="absolute inset-0 h-20 w-20 animate-spin rounded-full border-2 border-t-[#7F77DD]" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <SparkleIcon className="w-8 h-8 text-[#7F77DD]" />
-                  </div>
-                </div>
-                <p className="mb-2 text-lg font-medium text-white">
-                  {progressSteps[Math.min(progressStep, progressSteps.length - 1)].label}
-                </p>
-                <p className="text-sm text-white/40">
-                  Generating for{' '}
-                  <span className="text-white/70">{extracted.role} @ {extracted.company}</span>
-                </p>
-                <p className="mt-6 text-xs text-white/25">This usually takes 15–30 seconds</p>
-              </div>
-
-              {/* Mobile: bottom sheet progress */}
-              <div className="flex flex-col items-center justify-center py-20 text-center lg:hidden">
-                <div className="relative mb-6">
-                  <div className="h-16 w-16 rounded-full border-2 border-white/10" />
-                  <div className="absolute inset-0 h-16 w-16 animate-spin rounded-full border-2 border-t-[#7F77DD]" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <SparkleIcon className="w-6 h-6 text-[#7F77DD]" />
-                  </div>
-                </div>
-                <p className="mb-6 text-sm text-white/40">
-                  {extracted.role} @ {extracted.company}
-                </p>
-                <div className="w-full space-y-3">
-                  {progressSteps.map((s, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: i <= progressStep ? 1 : 0.25, x: 0 }}
-                      transition={{ delay: i * 0.15 }}
-                      className="flex items-center gap-3"
+        {/* Step 3: Generating */}
+        {step === 'generating' && (
+          <motion.div
+            key="generating"
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.25 }}
+          >
+            <div className="py-16 text-center">
+              <p className="font-display text-2xl font-light italic text-ink mb-2">
+                Generating your documents
+              </p>
+              <p className="font-mono text-[11px] text-ink-mid mb-8">
+                {extracted.role} @ {extracted.company}
+              </p>
+              <div className="w-full space-y-3 text-left">
+                {progressSteps.map((s, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: i <= progressStep ? 1 : 0.35, x: 0 }}
+                    transition={{ delay: i * 0.15 }}
+                    className="flex items-baseline gap-3"
+                  >
+                    <span className="font-mono text-[10px] text-rule">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span
+                      className={`font-sans text-sm ${
+                        i < progressStep
+                          ? 'text-ink-mid'
+                          : i === progressStep
+                          ? 'text-ink'
+                          : 'text-rule'
+                      }`}
                     >
-                      <div
-                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs ${
-                          i < progressStep
-                            ? 'bg-[#97C459] text-white'
-                            : i === progressStep
-                            ? 'bg-[#7F77DD] text-white'
-                            : 'bg-white/5 text-[#52525b]'
-                        }`}
-                      >
-                        {i < progressStep ? (
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        ) : i === progressStep ? (
-                          <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                          </svg>
-                        ) : (
-                          '·'
-                        )}
-                      </div>
-                      <span
-                        className={`text-sm ${
-                          i === progressStep ? 'font-medium text-[#e4e4e7]' : i < progressStep ? 'text-[#71717a]' : 'text-[#3f3f46]'
-                        }`}
-                      >
-                        {s.label}
-                      </span>
-                    </motion.div>
+                      {s.label}
+                    </span>
+                    <span className="ml-auto font-mono text-[10px] text-ink-mid">
+                      {i < progressStep ? '✓' : i === progressStep ? '···' : ''}
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
+              <p className="mt-8 font-mono text-[10px] text-rule">This usually takes 15–30 seconds</p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Step 4: Done */}
+        {step === 'done' && result && (
+          <motion.div
+            key="done"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="border-l-[3px] border-stamp-gold bg-stamp-gold/5 px-4 py-4 mb-5">
+              <p className="font-mono text-[11px] text-stamp-gold font-semibold">Documents generated!</p>
+              <p className="font-sans text-sm text-ink-mid mt-0.5">
+                Resume ready for {extracted.role} @ {extracted.company}
+              </p>
+            </div>
+
+            {extractTopSkills(result.content).length > 0 && (
+              <div className="border border-rule bg-paper-alt p-4 mb-5">
+                <p className="font-mono text-[10px] tracking-widest uppercase text-ink-mid mb-3">
+                  Skills highlighted
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {extractTopSkills(result.content).map((skill) => (
+                    <span
+                      key={skill}
+                      className="inline-flex border border-stamp-blue/40 bg-stamp-blue/8 px-2 py-0.5 font-mono text-[10px] tracking-[0.1em] text-stamp-blue"
+                    >
+                      {skill}
+                    </span>
                   ))}
                 </div>
               </div>
-            </motion.div>
-          )}
+            )}
 
-          {/* Step 4: Done */}
-          {step === 'done' && result && (
-            <motion.div
-              key="done"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="mb-5 flex items-start gap-3 rounded-2xl border border-green-500/30 bg-green-500/10 p-4">
-                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-green-500/30 text-green-300">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </span>
-                <div>
-                  <p className="text-sm font-semibold text-green-300">Documents generated!</p>
-                  <p className="mt-0.5 text-xs text-green-400/70">
-                    Resume ready for {extracted.role} @ {extracted.company}
-                  </p>
-                </div>
-              </div>
-
-              {extractTopSkills(result.content).length > 0 && (
-                <div className="mb-5 rounded-xl border border-white/5 bg-white/5 p-4">
-                  <p className="mb-3 text-xs font-medium uppercase tracking-wide text-white/40">
-                    Skills highlighted
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {extractTopSkills(result.content).map((skill) => (
-                      <span
-                        key={skill}
-                        className="rounded-full border border-[#7F77DD]/40 bg-[#7F77DD]/10 px-2.5 py-1 text-xs text-[#a09aee]"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="space-y-3">
-                <button
-                  onClick={handleViewFull}
-                  className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#7F77DD] text-base font-semibold text-white transition-all hover:bg-[#6e66cc]"
-                >
-                  View & Download Documents
-                </button>
-                <button
-                  onClick={() => router.push('/dashboard')}
-                  className="flex h-11 w-full items-center justify-center rounded-xl border border-white/10 text-sm font-medium text-white/60 transition-all hover:border-white/20 hover:text-white"
-                >
-                  Back to Dashboard
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+            <div className="space-y-3">
+              <button
+                onClick={handleViewFull}
+                className="w-full bg-stamp-red py-3 font-mono text-[10px] tracking-widest uppercase text-paper transition-colors hover:bg-stamp-red/90"
+              >
+                View & Download Documents
+              </button>
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="w-full border border-rule py-2.5 font-mono text-[10px] tracking-widest uppercase text-ink-mid transition-colors hover:bg-paper-alt"
+              >
+                Back to Dashboard
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

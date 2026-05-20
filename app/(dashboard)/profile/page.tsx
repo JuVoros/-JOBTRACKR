@@ -34,12 +34,9 @@ export default async function ProfilePage() {
     : null
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-[#e4e4e7]">Profile</h1>
-        <p className="text-sm text-[#52525b]">
-          Add your background to power AI resume &amp; cover letter generation
-        </p>
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-8 sm:py-10">
+      <div className="mb-8 flex items-baseline justify-between gap-4 border-b border-rule pb-4">
+        <h1 className="font-display text-3xl font-light italic text-ink">Profile</h1>
       </div>
       <ProfileClient profile={serialized} />
     </div>

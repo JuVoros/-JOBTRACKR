@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect, useCallback } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import type { Application, Status } from '../../types'
 import StatsRow from './StatsRow'
 import FilterChips from './FilterChips'
@@ -15,16 +15,16 @@ interface DashboardClientProps {
   jobs: Application[]
 }
 
+// Shared column template for the ledger — header and rows must match
+const LEDGER_COLS = 'md:grid-cols-[1fr_120px_72px_140px_80px]'
+
 export default function DashboardClient({ jobs }: DashboardClientProps) {
   const [filter, setFilter] = useState<Filter>('all')
   const [modalOpen, setModalOpen] = useState(false)
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  // Local deletion tracking so AnimatePresence can exit-animate the card even
-  // while the server action revalidates the dashboard.
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set())
 
-  // Debounce search (150ms)
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(searchInput.trim().toLowerCase()), 150)
     return () => clearTimeout(t)
@@ -62,90 +62,88 @@ export default function DashboardClient({ jobs }: DashboardClientProps) {
   }, [visibleJobs])
 
   const handleDelete = useCallback((id: string) => {
-    setDeletedIds((prev) => {
-      const next = new Set(prev)
-      next.add(id)
-      return next
-    })
+    setDeletedIds((prev) => new Set([...prev, id]))
   }, [])
 
   return (
     <>
-      <div className="w-full min-w-0 space-y-6">
+      <div className="w-full min-w-0 space-y-8">
+        {/* Page title + desktop add button */}
+        <div className="flex items-baseline justify-between gap-4">
+          <h1 className="font-display text-3xl font-light italic text-ink">
+            Applications
+          </h1>
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="hidden sm:inline-flex border border-stamp-red px-4 py-2 font-mono text-[10px] tracking-widest uppercase text-stamp-red transition-colors hover:bg-stamp-red hover:text-paper"
+          >
+            + New entry
+          </button>
+        </div>
+
+        {/* Pipeline summary */}
         <StatsRow jobs={visibleJobs} />
 
-        {/* Search */}
+        {/* Search — bare underline, no box */}
         <div className="relative">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#52525b]"
-          >
-            <circle cx="11" cy="11" r="7" />
-            <path d="M21 21l-4.3-4.3" />
-          </svg>
           <input
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search companies or roles..."
-            className="h-11 w-full rounded-xl border border-white/5 bg-[#1a1a1e] pl-10 pr-10 text-sm text-[#e4e4e7] placeholder:text-[#52525b] outline-none transition-colors focus:border-[#7F77DD]/40 focus:ring-1 focus:ring-[#7F77DD]/40"
+            placeholder="Search company or role..."
+            className="h-10 w-full border-b border-rule bg-transparent font-mono text-sm text-ink placeholder:text-rule outline-none focus:border-ink transition-colors pr-6"
           />
-          <AnimatePresence>
-            {searchInput && (
-              <motion.button
-                key="clear"
-                type="button"
-                onClick={() => setSearchInput('')}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.15 }}
-                className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-lg text-[#71717a] transition-colors hover:bg-white/5 hover:text-[#e4e4e7]"
-                aria-label="Clear search"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </motion.button>
-            )}
-          </AnimatePresence>
+          {searchInput && (
+            <button
+              type="button"
+              onClick={() => setSearchInput('')}
+              className="absolute right-0 top-1/2 -translate-y-1/2 font-mono text-base text-ink-mid hover:text-ink transition-colors leading-none"
+              aria-label="Clear search"
+            >
+              ×
+            </button>
+          )}
         </div>
 
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {/* Filter tabs + entry count */}
+        <div className="flex items-end justify-between gap-4 border-b border-rule">
           <FilterChips active={filter} onChange={setFilter} counts={counts} />
-          <button
-            type="button"
-            onClick={() => setModalOpen(true)}
-            className="hidden h-9 items-center gap-1.5 rounded-full bg-[#7F77DD] px-4 text-sm font-medium text-white transition-colors hover:bg-[#938BF0] sm:inline-flex"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Add
-          </button>
+          <span className="hidden sm:block pb-2 font-mono text-[10px] tracking-widest text-ink-mid">
+            {filtered.length} {filtered.length === 1 ? 'entry' : 'entries'}
+          </span>
         </div>
 
+        {/* ── Ledger ── */}
         {visibleJobs.length === 0 ? (
           <EmptyState onAdd={() => setModalOpen(true)} />
         ) : filtered.length === 0 ? (
-          <div className="rounded-2xl border border-white/5 bg-[#1a1a1e] px-6 py-16 text-center">
-            <p className="text-sm text-[#52525b]">
+          <div className="border-b border-rule px-6 py-12 text-center">
+            <p className="font-mono text-xs text-ink-mid">
               {debouncedSearch
-                ? `No applications match "${debouncedSearch}".`
-                : `No ${filter} applications.`}
+                ? `No entries match "${debouncedSearch}"`
+                : `No ${filter} entries`}
             </p>
           </div>
         ) : (
-          <div className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <>
+            {/* Table header — desktop only */}
+            <div className={`hidden md:grid ${LEDGER_COLS} border-y border-rule bg-paper-alt`}>
+              <div className="px-6 py-2 font-mono text-[10px] tracking-widest uppercase text-ink-mid">
+                Company / Role
+              </div>
+              <div className="px-3 py-2 font-mono text-[10px] tracking-widest uppercase text-ink-mid">
+                Applied
+              </div>
+              <div className="px-3 py-2 font-mono text-[10px] tracking-widest uppercase text-ink-mid">
+                Days
+              </div>
+              <div className="px-3 py-2 font-mono text-[10px] tracking-widest uppercase text-ink-mid">
+                Status
+              </div>
+              <div />
+            </div>
+
             <AnimatePresence mode="popLayout">
               {filtered.map((job, i) => (
                 <ApplicationCard
@@ -156,22 +154,19 @@ export default function DashboardClient({ jobs }: DashboardClientProps) {
                 />
               ))}
             </AnimatePresence>
-          </div>
+          </>
         )}
       </div>
 
-      {/* Mobile FAB — raised above the taller bottom nav */}
+      {/* Mobile FAB — square, stamp-red border */}
       <button
         type="button"
         onClick={() => setModalOpen(true)}
-        className="fixed right-5 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[#7F77DD] text-white shadow-lg shadow-[#7F77DD]/20 transition-transform active:scale-95 sm:hidden"
-        style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
+        className="fixed right-5 z-30 flex h-14 w-14 items-center justify-center border border-stamp-red bg-paper text-stamp-red transition-colors hover:bg-stamp-red hover:text-paper sm:hidden"
+        style={{ bottom: 'calc(3.75rem + env(safe-area-inset-bottom))' }}
         aria-label="Add application"
       >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19" />
-          <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
+        <span className="font-mono text-2xl leading-none">+</span>
       </button>
 
       <AddJobModal open={modalOpen} onClose={() => setModalOpen(false)} />

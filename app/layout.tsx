@@ -1,24 +1,36 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Cormorant_Garamond, Jost, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jost = Jost({
+  variable: "--font-jost",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  display: "swap",
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  variable: "--font-ibmplex",
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "JobTrackr",
-  description: "Track your job applications and generate AI-powered resumes",
+  description: "Track your job applications",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "JobTrackr",
   },
 };
@@ -27,7 +39,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#7F77DD",
+  themeColor: "#F4EFE6",
 };
 
 export default function RootLayout({
@@ -36,17 +48,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} dark`}>
+    <html
+      lang="en"
+      className={`${cormorant.variable} ${jost.variable} ${ibmPlexMono.variable}`}
+    >
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="JobTrackr" />
       </head>
-      <body className="min-h-screen bg-[#0d0d0f] text-[#e4e4e7] antialiased">
-        <div className="bg-moody-gradient" aria-hidden="true" />
-        <div className="relative z-10">{children}</div>
+      <body className="min-h-screen bg-paper text-ink antialiased">
+        {children}
       </body>
     </html>
   );

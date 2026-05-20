@@ -47,20 +47,17 @@ export default async function GeneratePage({ params }: GeneratePageProps) {
     : {}
 
   return (
-    <div className="mx-auto w-full max-w-2xl overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mb-6 flex items-center gap-3">
+    <div className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
+      <div className="mb-8 border-b border-rule pb-6">
         <a
           href="/dashboard"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-[#52525b] transition-colors hover:bg-white/5 hover:text-[#a1a1aa]"
+          className="inline-flex items-center gap-2 font-mono text-[10px] tracking-widest uppercase text-ink-mid transition-colors hover:text-ink"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
+          <span className="text-rule">←</span>
+          Register
         </a>
-        <div>
-          <h1 className="text-xl font-semibold text-[#e4e4e7]">Generate</h1>
-          <p className="text-sm text-[#52525b]">AI-powered documents for your application</p>
-        </div>
+        <h1 className="mt-3 font-display text-3xl font-light italic text-ink">{job.company}</h1>
+        <p className="mt-1 font-mono text-[11px] text-ink-mid">{job.role}</p>
       </div>
       <GenerateClient
         jobId={jobId}

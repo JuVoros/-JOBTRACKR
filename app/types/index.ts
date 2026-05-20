@@ -11,29 +11,30 @@ export interface Application {
 
 export const STATUSES: Status[] = ['applied', 'interview', 'offer', 'rejected']
 
+// Stamp labels are ALL CAPS — rubber-stamp aesthetic
 export const STATUS_CONFIG: Record<Status, { label: string; bg: string; text: string; border: string }> = {
   applied: {
-    label: 'Applied',
-    bg: 'bg-[#185FA522]',
-    text: 'text-[#85B7EB]',
-    border: 'border-[#185FA544]',
+    label: 'APPLIED',
+    bg: 'bg-stamp-blue/8',
+    text: 'text-stamp-blue',
+    border: 'border-stamp-blue/50',
   },
   interview: {
-    label: 'Interview',
-    bg: 'bg-[#3B6D1122]',
-    text: 'text-[#97C459]',
-    border: 'border-[#3B6D1144]',
+    label: 'INTERVIEW',
+    bg: 'bg-stamp-gold/8',
+    text: 'text-stamp-gold',
+    border: 'border-stamp-gold/50',
   },
   offer: {
-    label: 'Offer',
-    bg: 'bg-[#534AB722]',
-    text: 'text-[#AFA9EC]',
-    border: 'border-[#534AB744]',
+    label: 'OFFER',
+    bg: 'bg-stamp-red/8',
+    text: 'text-stamp-red',
+    border: 'border-stamp-red/50',
   },
   rejected: {
-    label: 'Rejected',
-    bg: 'bg-[#A32D2D22]',
-    text: 'text-[#F09595]',
-    border: 'border-[#A32D2D44]',
+    label: 'REJECTED',
+    bg: 'bg-stamp-ash/8',
+    text: 'text-stamp-ash',
+    border: 'border-stamp-ash/50',
   },
 }

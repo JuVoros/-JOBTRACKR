@@ -1,8 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import type { Status } from '../../types'
-import { STATUS_CONFIG } from '../../types'
 
 type Filter = 'all' | Status
 
@@ -13,16 +11,16 @@ interface FilterChipsProps {
 }
 
 const FILTERS: { key: Filter; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'applied', label: 'Applied' },
-  { key: 'interview', label: 'Interview' },
-  { key: 'offer', label: 'Offer' },
-  { key: 'rejected', label: 'Rejected' },
+  { key: 'all',       label: 'ALL' },
+  { key: 'applied',   label: 'APPLIED' },
+  { key: 'interview', label: 'INTERVIEW' },
+  { key: 'offer',     label: 'OFFER' },
+  { key: 'rejected',  label: 'REJECTED' },
 ]
 
 export default function FilterChips({ active, onChange, counts }: FilterChipsProps) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex items-end gap-0 overflow-x-auto">
       {FILTERS.map(({ key, label }) => {
         const isActive = active === key
         return (
@@ -30,23 +28,15 @@ export default function FilterChips({ active, onChange, counts }: FilterChipsPro
             key={key}
             type="button"
             onClick={() => onChange(key)}
-            className={`relative flex h-9 items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors ${
-              isActive
-                ? 'border-[#7F77DD]/30 text-[#e4e4e7]'
-                : 'border-white/5 text-[#71717a] hover:border-white/10 hover:text-[#a1a1aa]'
+            className={`relative shrink-0 px-4 pb-2 pt-1 font-mono text-[10px] tracking-widest transition-colors ${
+              isActive ? 'text-ink' : 'text-ink-mid hover:text-ink'
             }`}
           >
+            {label}
+            <span className="ml-2 tabular-nums">{counts[key]}</span>
             {isActive && (
-              <motion.div
-                layoutId="filter-pill"
-                className="absolute inset-0 rounded-full bg-[#7F77DD]/10"
-                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-              />
+              <span className="absolute bottom-0 inset-x-0 h-[2px] bg-ink" />
             )}
-            <span className="relative">{label}</span>
-            <span className={`relative tabular-nums ${isActive ? 'text-[#7F77DD]' : 'text-[#52525b]'}`}>
-              {counts[key]}
-            </span>
           </button>
         )
       })}

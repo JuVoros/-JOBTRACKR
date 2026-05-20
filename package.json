@@ -16,12 +16,13 @@
     "@supabase/ssr": "^0.10.0",
     "@supabase/supabase-js": "^2.101.1",
     "framer-motion": "^12.38.0",
-    "next": "16.2.2",
+    "next": "^16.2.6",
     "pdf-parse": "^2.4.5",
     "pg": "^8.20.0",
-    "prisma": "^7.6.0",
+    "prisma": "^6.19.3",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "update": "^0.4.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

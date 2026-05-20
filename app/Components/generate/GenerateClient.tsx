@@ -84,42 +84,35 @@ function SpinnerIcon({ size = 18 }: { size?: number }) {
 function ProgressStep({
   state,
   label,
+  index,
 }: {
   state: 'done' | 'active' | 'pending'
   label: string
+  index: number
 }) {
+  const num = String(index + 1).padStart(2, '0')
   return (
-    <div className="flex items-center gap-3">
-      <div
-        className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs ${
-          state === 'done'
-            ? 'bg-[#97C459] text-white'
-            : state === 'active'
-            ? 'bg-[#7F77DD] text-white'
-            : 'bg-white/5 text-[#52525b]'
-        }`}
-      >
-        {state === 'done' ? (
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        ) : state === 'active' ? (
-          <SpinnerIcon size={12} />
-        ) : (
-          '·'
-        )}
-      </div>
+    <div className="flex items-baseline gap-3">
+      <span className="font-mono text-[10px] text-rule">{num}</span>
       <span
-        className={`text-sm ${
+        className={`font-sans text-sm ${
           state === 'active'
-            ? 'font-medium text-[#e4e4e7]'
+            ? 'text-ink'
             : state === 'done'
-            ? 'text-[#71717a]'
-            : 'text-[#3f3f46]'
+            ? 'text-ink-mid'
+            : 'text-rule'
         }`}
       >
         {label}
       </span>
+      {state === 'done' && (
+        <span className="ml-auto font-mono text-[10px] text-ink-mid">✓</span>
+      )}
+      {state === 'active' && (
+        <span className="ml-auto">
+          <SpinnerIcon size={12} />
+        </span>
+      )}
     </div>
   )
 }
@@ -148,7 +141,7 @@ function MobileProgressSheet({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
           />
           <motion.div
             key="sheet"
@@ -156,16 +149,16 @@ function MobileProgressSheet({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 380, damping: 38 }}
-            className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl border-t border-white/5 bg-[#1a1a1e] px-6 pt-4 lg:hidden"
+            className="fixed inset-x-0 bottom-0 z-50 border-t border-rule bg-paper px-6 pt-4 lg:hidden"
             style={{ paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom))' }}
           >
-            <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-white/10" />
-            <p className="mb-5 text-xs font-medium uppercase tracking-wider text-[#52525b]">
+            <div className="mx-auto mb-5 h-1 w-10 bg-rule" />
+            <p className="mb-5 font-mono text-[10px] tracking-widest uppercase text-ink-mid">
               Generating
             </p>
             <div className="space-y-4">
               {steps.map((s, i) => (
-                <ProgressStep key={i} state={stateFor(i, step)} label={s} />
+                <ProgressStep key={i} index={i} state={stateFor(i, step)} label={s} />
               ))}
             </div>
           </motion.div>
@@ -312,12 +305,12 @@ export default function GenerateClient({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl border border-white/5 bg-[#1a1a1e] px-6 py-16 text-center"
+        className="border border-rule bg-paper-alt p-6 px-6 py-16 text-center"
       >
-        <p className="text-sm text-[#a1a1aa]">Complete your profile to generate documents.</p>
+        <p className="text-sm text-ink-mid">Complete your profile to generate documents.</p>
         <a
           href="/profile"
-          className="mt-4 inline-flex h-11 items-center rounded-full bg-[#7F77DD] px-6 text-sm font-medium text-white transition-colors hover:bg-[#938BF0]"
+          className="mt-4 inline-flex items-center bg-stamp-red px-6 py-3 font-mono text-[10px] tracking-widest uppercase text-paper transition-colors hover:bg-stamp-red/90"
         >
           Set Up Profile
         </a>
@@ -328,24 +321,19 @@ export default function GenerateClient({
   // ── Shared UI fragments ────────────────────────────────────────────────────
 
   const Tabs = (
-    <div className="flex gap-1.5 rounded-2xl border border-white/5 bg-[#1a1a1e] p-1.5">
+    <div className="flex border-b border-rule">
       {(['resume', 'cover_letter'] as Tab[]).map((t) => (
         <button
           key={t}
           type="button"
           onClick={() => handleSelectTab(t)}
-          className={`relative flex h-12 flex-1 items-center justify-center rounded-xl px-4 text-sm font-medium transition-colors ${
-            tab === t ? 'text-[#e4e4e7]' : 'text-[#52525b] hover:text-[#a1a1aa]'
+          className={`relative px-4 py-2.5 font-mono text-[10px] tracking-widest uppercase transition-colors ${
+            tab === t
+              ? 'border-b-2 border-ink text-ink'
+              : 'text-ink-mid hover:text-ink'
           }`}
         >
-          {tab === t && (
-            <motion.div
-              layoutId="activeTab"
-              className="absolute inset-0 rounded-xl bg-white/5"
-              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            />
-          )}
-          <span className="relative z-10">{t === 'resume' ? 'Resume' : 'Cover Letter'}</span>
+          {t === 'resume' ? 'Resume' : 'Cover Letter'}
         </button>
       ))}
     </div>
@@ -358,7 +346,7 @@ export default function GenerateClient({
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
-          className="rounded-xl border border-[#A32D2D44] bg-[#A32D2D22] px-4 py-3 text-sm text-[#F09595]"
+          className="border-l-[3px] border-stamp-red bg-stamp-red/5 px-4 py-3 font-sans text-sm text-stamp-red"
         >
           {error}
         </motion.div>
@@ -378,16 +366,16 @@ export default function GenerateClient({
       className="w-full space-y-5"
     >
       {/* Job meta header */}
-      <div className="rounded-2xl border border-white/5 bg-[#1a1a1e] p-4 sm:p-5">
-        <p className="truncate text-base font-semibold text-[#e4e4e7]">{company}</p>
-        <p className="truncate text-sm text-[#71717a]">{role}</p>
+      <div className="border-b border-rule pb-4 mb-4">
+        <p className="truncate text-base font-semibold text-ink">{company}</p>
+        <p className="truncate text-sm text-ink-mid">{role}</p>
       </div>
 
       {Tabs}
 
-      {/* Input card */}
-      <div className="rounded-2xl border border-white/5 bg-[#1a1a1e] p-4 sm:p-5">
-        <label className="mb-2 block text-sm font-medium text-[#e4e4e7]">
+      {/* Label + textarea directly, no wrapper card */}
+      <div>
+        <label className="mb-2 block font-mono text-[10px] tracking-widest uppercase text-ink-mid">
           Job description
         </label>
         <textarea
@@ -395,21 +383,20 @@ export default function GenerateClient({
           onChange={(e) => setInput(e.target.value)}
           rows={8}
           placeholder="Paste job description or drop a URL"
-          className="min-h-[180px] w-full resize-none rounded-xl border border-white/5 bg-[#0d0d0f] px-4 py-3 text-base leading-relaxed text-[#e4e4e7] placeholder-[#3f3f46] outline-none transition-colors focus:border-[#7F77DD]/40 sm:text-sm"
+          className="min-h-[180px] w-full resize-none border border-rule bg-paper px-3 py-2.5 font-sans text-sm text-ink placeholder-rule outline-none transition-colors focus:border-ink"
         />
         {scraping && (
-          <p className="mt-2 flex items-center gap-2 text-xs text-[#7F77DD]">
+          <p className="mt-2 flex items-center gap-2 font-mono text-[10px] text-ink-mid">
             <SpinnerIcon size={12} /> Fetching job post...
           </p>
         )}
       </div>
 
-      <motion.button
+      <button
         type="button"
         onClick={handleGenerate}
         disabled={isPending || !hasInput}
-        whileTap={{ scale: 0.98 }}
-        className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#7F77DD] text-base font-semibold text-white transition-colors hover:bg-[#938BF0] disabled:opacity-50"
+        className="flex w-full items-center justify-center gap-2 bg-stamp-red py-3 font-mono text-[10px] tracking-widest uppercase text-paper transition-colors hover:bg-stamp-red/90 disabled:opacity-50"
       >
         {isPending ? (
           <>
@@ -421,16 +408,16 @@ export default function GenerateClient({
             {currentContent ? `Regenerate ${tabLabel}` : `Generate ${tabLabel}`}
           </>
         )}
-      </motion.button>
+      </button>
 
       {ErrorBanner}
 
       {/* Desktop inline progress */}
       {isPending && (
-        <div className="hidden rounded-2xl border border-white/5 bg-[#1a1a1e] px-6 py-6 lg:block">
+        <div className="hidden border border-rule bg-paper-alt px-6 py-6 lg:block">
           <div className="space-y-4">
             {steps.map((s, i) => (
-              <ProgressStep key={i} state={stateFor(i, loadingStep)} label={s} />
+              <ProgressStep key={i} index={i} state={stateFor(i, loadingStep)} label={s} />
             ))}
           </div>
         </div>
@@ -451,10 +438,10 @@ export default function GenerateClient({
     >
       {/* Header */}
       <div>
-        <p className="text-xs font-medium uppercase tracking-wider text-[#52525b]">
+        <p className="font-mono text-[10px] tracking-widest uppercase text-ink-mid border-b border-rule pb-2">
           {tabLabel}
         </p>
-        <h2 className="mt-1 text-xl font-semibold text-[#e4e4e7] sm:text-2xl">
+        <h2 className="mt-2 font-display text-2xl font-light italic text-ink">
           {tabLabel} for {company}
         </h2>
       </div>
@@ -462,8 +449,8 @@ export default function GenerateClient({
       {Tabs}
 
       {/* Content */}
-      <div className="rounded-2xl border border-white/5 bg-[#1a1a1e] p-4 sm:p-6">
-        <pre className="max-h-[60vh] overflow-auto whitespace-pre-wrap text-sm leading-relaxed text-[#d4d4d8] lg:max-h-[62vh]">
+      <div className="border border-rule bg-paper p-4 sm:p-6">
+        <pre className="max-h-[60vh] overflow-auto whitespace-pre-wrap font-sans text-sm leading-relaxed text-ink lg:max-h-[62vh]">
           {currentContent}
         </pre>
       </div>
@@ -476,7 +463,7 @@ export default function GenerateClient({
           type="button"
           onClick={handleDownloadPdf}
           disabled={downloading}
-          className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#7F77DD] text-base font-semibold text-white transition-colors hover:bg-[#938BF0] disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 bg-stamp-red py-3 font-mono text-[10px] tracking-widest uppercase text-paper transition-colors hover:bg-stamp-red/90 disabled:opacity-50"
         >
           {downloading ? (
             <>
@@ -489,7 +476,7 @@ export default function GenerateClient({
         <button
           type="button"
           onClick={handleRegenerate}
-          className="h-11 w-full text-sm font-medium text-[#a1a1aa] transition-colors hover:text-[#e4e4e7]"
+          className="w-full py-2.5 font-mono text-[10px] tracking-widest uppercase text-ink-mid transition-colors hover:text-ink"
         >
           Regenerate
         </button>
@@ -508,13 +495,13 @@ export default function GenerateClient({
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 80, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 380, damping: 34 }}
-          className="fixed inset-x-0 bottom-16 z-30 border-t border-white/5 bg-[#0d0d0f]/95 px-4 pt-3 backdrop-blur-md lg:hidden"
+          className="fixed inset-x-0 bottom-16 z-30 border-t border-rule bg-paper px-4 pt-3 lg:hidden"
           style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
         >
           <button
             type="button"
             onClick={handleRegenerate}
-            className="mx-auto mb-2 block h-8 text-xs font-medium text-[#a1a1aa] transition-colors hover:text-[#e4e4e7]"
+            className="mx-auto mb-2 block font-mono text-[10px] tracking-widest uppercase text-ink-mid transition-colors hover:text-ink"
           >
             Regenerate
           </button>
@@ -522,7 +509,7 @@ export default function GenerateClient({
             type="button"
             onClick={handleDownloadPdf}
             disabled={downloading}
-            className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#7F77DD] text-base font-semibold text-white transition-colors hover:bg-[#938BF0] active:scale-[0.98] disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 bg-stamp-red py-3 font-mono text-[10px] tracking-widest uppercase text-paper transition-colors hover:bg-stamp-red/90 disabled:opacity-50"
           >
             {downloading ? (
               <>

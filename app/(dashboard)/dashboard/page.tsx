@@ -31,21 +31,16 @@ export default async function DashboardPage() {
   }))
 
   return (
-    <div className="mx-auto w-full max-w-5xl overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-[#e4e4e7]">Dashboard</h1>
-        <p className="text-sm text-[#52525b]">Track your applications</p>
-      </div>
-
+    <div className="mx-auto w-full max-w-5xl overflow-x-hidden px-4 py-8 sm:px-8 sm:py-10">
       {!profile && jobs.length > 0 && (
         <a
           href="/profile"
-          className="mb-6 flex items-center justify-between rounded-2xl border border-[#534AB744] bg-[#534AB722] px-4 py-3 transition-colors hover:bg-[#534AB733]"
+          className="mb-8 flex items-center justify-between border border-rule bg-paper-alt px-4 py-3 transition-colors hover:bg-paper-dark"
         >
-          <span className="text-sm text-[#AFA9EC]">
+          <span className="font-mono text-[11px] tracking-wide text-ink-mid">
             Complete your profile to unlock AI resume generation
           </span>
-          <span className="text-sm text-[#7F77DD]">&rarr;</span>
+          <span className="font-mono text-sm text-ink-mid">&rarr;</span>
         </a>
       )}
 

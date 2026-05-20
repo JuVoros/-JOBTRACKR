@@ -27,29 +27,17 @@ export default function LogoutButton({ variant = 'sidebar' }: LogoutButtonProps)
         <button
           onClick={() => setConfirmOpen(true)}
           type="button"
-          className="flex min-h-14 flex-1 flex-col items-center justify-center gap-1 text-[#52525b] transition-colors hover:text-[#a1a1aa]"
+          className="flex flex-1 items-center justify-center text-ink-mid transition-colors hover:text-ink"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-          </span>
-          <span className="text-[10px] font-medium tracking-wide">Log out</span>
+          <span className="font-mono text-[10px] tracking-[0.12em]">EXIT</span>
         </button>
       ) : (
         <button
           onClick={() => setConfirmOpen(true)}
           type="button"
-          className="flex h-11 items-center gap-2 rounded-xl px-3 text-sm text-[#71717a] transition-colors hover:bg-white/5 hover:text-[#e4e4e7]"
+          className="flex h-9 w-full items-center font-mono text-[11px] tracking-widest text-ink-mid uppercase transition-colors hover:text-stamp-red"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
-          <span className="hidden lg:inline">Log out</span>
+          Log out
         </button>
       )}
 
@@ -61,29 +49,32 @@ export default function LogoutButton({ variant = 'sidebar' }: LogoutButtonProps)
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-ink/30 px-4"
             onClick={() => !loggingOut && setConfirmOpen(false)}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 12 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 12 }}
-              transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.15 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-sm rounded-2xl border border-white/5 bg-[#1a1a1e] p-6 shadow-2xl"
+              className="w-full max-w-sm border border-rule bg-paper p-6"
             >
-              <h3 className="text-base font-semibold text-[#e4e4e7]">
-                Are you sure you want to log out?
-              </h3>
-              <p className="mt-1.5 text-sm text-[#71717a]">
+              <p className="font-mono text-[10px] tracking-widest uppercase text-ink-mid mb-3">
+                Confirm
+              </p>
+              <p className="font-display text-xl font-semibold italic text-ink">
+                Log out?
+              </p>
+              <p className="mt-2 font-sans text-sm text-ink-mid">
                 You&apos;ll need to sign in again to access your applications.
               </p>
-              <div className="mt-5 flex gap-2">
+              <div className="mt-6 flex gap-3">
                 <button
                   type="button"
                   onClick={() => setConfirmOpen(false)}
                   disabled={loggingOut}
-                  className="h-11 flex-1 rounded-xl border border-white/5 text-sm font-medium text-[#a1a1aa] transition-colors hover:bg-white/5 hover:text-[#e4e4e7] disabled:opacity-50"
+                  className="flex-1 border border-rule py-2.5 font-mono text-xs tracking-widest uppercase text-ink-mid transition-colors hover:bg-paper-alt disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -91,9 +82,9 @@ export default function LogoutButton({ variant = 'sidebar' }: LogoutButtonProps)
                   type="button"
                   onClick={handleLogout}
                   disabled={loggingOut}
-                  className="h-11 flex-1 rounded-xl bg-[#7F77DD] text-sm font-semibold text-white transition-colors hover:bg-[#938BF0] disabled:opacity-60"
+                  className="flex-1 bg-ink py-2.5 font-mono text-xs tracking-widest uppercase text-paper transition-colors hover:bg-ink/90 disabled:opacity-60"
                 >
-                  {loggingOut ? 'Logging out...' : 'Log Out'}
+                  {loggingOut ? 'Signing out...' : 'Log out'}
                 </button>
               </div>
             </motion.div>
